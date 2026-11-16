@@ -6,15 +6,13 @@ export default {
     extend: {
       colors: {
         ink: "#12151a",
-        asphalt: "#1c2127",
         steel: "#5b6673",
         shop: "#d64818",
-        caution: "#f2b705",
-        paper: "#f7f5f0",
+        navy: "#1b2a41",
+        blueline: "#c7d2e0",
       },
       fontFamily: {
-        display: ["Oswald", "sans-serif"],
-        body: ['"Work Sans"', "sans-serif"],
+        landing: ['"Work Sans"', "sans-serif"],
       },
     },
   },
