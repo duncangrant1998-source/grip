@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
-import { Logo } from "@/components/Logo";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export default async function Home() {
   // Already signed in: skip the pitch, go straight to your shop.
@@ -9,32 +10,14 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-white font-landing text-navy">
-      <Header />
+      <SiteHeader />
       <Hero />
       <Problem />
-      <Features />
+      <FeaturesTeaser />
       <Trust />
-      <Contact />
-      <Footer />
+      <ContactTeaser />
+      <SiteFooter />
     </main>
-  );
-}
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-10 border-b border-blueline bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <Logo className="h-6" />
-        <nav className="flex items-center gap-7 text-sm text-steel">
-          <a href="#features" className="hidden hover:text-navy sm:inline">
-            Features
-          </a>
-          <Link href="/login" className="font-medium text-navy hover:text-shop">
-            Sign in
-          </Link>
-        </nav>
-      </div>
-    </header>
   );
 }
 
@@ -53,18 +36,18 @@ function Hero() {
           performance shops.
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-5">
-          <a
-            href="#contact"
+          <Link
+            href="/contact"
             className="rounded-sm bg-shop px-6 py-3 text-sm font-semibold text-white transition hover:bg-shop/90"
           >
             Get in touch
-          </a>
-          <a
-            href="#features"
+          </Link>
+          <Link
+            href="/features"
             className="text-sm font-medium text-navy underline decoration-blueline decoration-2 underline-offset-4 transition hover:decoration-shop"
           >
             See what it does
-          </a>
+          </Link>
         </div>
       </div>
     </section>
@@ -108,36 +91,24 @@ function Problem() {
   );
 }
 
-function Features() {
-  const features = [
+function FeaturesTeaser() {
+  const highlights = [
     {
       title: "Scheduling & bays",
-      body: "Book appointments against real bay availability, assign the right tech, and see the day at a glance.",
+      body: "Book appointments against real bay availability and see the day at a glance.",
     },
     {
       title: "Work orders",
-      body: "From quote to invoice, with flat-rate or straight-time labour billing, whichever way your shop charges.",
+      body: "From quote to invoice, with flat-rate or straight-time labour billing.",
     },
     {
       title: "Parts & inventory",
-      body: "Stock levels, reorder points, suppliers, and purchase orders, tied directly to the jobs that use them.",
-    },
-    {
-      title: "Customers & vehicles",
-      body: "Full service history per vehicle, so nobody's starting from scratch on a repeat customer.",
-    },
-    {
-      title: "Staff & time clock",
-      body: "Shifts, time-off requests, and time tracked against real jobs, for payroll and billing alike.",
-    },
-    {
-      title: "Reports",
-      body: "See what's actually happening in the shop: open work, parts moving slowly, where the hours go.",
+      body: "Stock levels, reorder points, and purchase orders, tied to the jobs that use them.",
     },
   ];
 
   return (
-    <section id="features" className="border-t border-blueline">
+    <section className="border-t border-blueline">
       <div className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
         <h2 className="text-2xl font-light tracking-tight sm:text-3xl">
           Everything in one place.
@@ -146,14 +117,20 @@ function Features() {
           Not a bundle of separate tools bolted together. One system where
           scheduling, parts, and billing already know about each other.
         </p>
-        <div className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2">
-          {features.map((f) => (
+        <div className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-3">
+          {highlights.map((f) => (
             <div key={f.title} className="border-t border-blueline pt-5">
               <h3 className="font-semibold">{f.title}</h3>
               <p className="mt-1.5 text-steel">{f.body}</p>
             </div>
           ))}
         </div>
+        <Link
+          href="/features"
+          className="mt-10 inline-block text-sm font-medium text-navy underline decoration-blueline decoration-2 underline-offset-4 transition hover:decoration-shop"
+        >
+          See all features
+        </Link>
       </div>
     </section>
   );
@@ -185,9 +162,9 @@ function Trust() {
   );
 }
 
-function Contact() {
+function ContactTeaser() {
   return (
-    <section id="contact" className="bg-shop">
+    <section className="bg-shop">
       <div className="mx-auto max-w-5xl px-6 py-20 text-center sm:py-24">
         <h2 className="text-2xl font-light tracking-tight text-white sm:text-3xl">
           Want GRIP running in your shop?
@@ -196,24 +173,13 @@ function Contact() {
           Get in touch and we&apos;ll walk through what it looks like for your
           shop, pricing included.
         </p>
-        <a
-          href="mailto:hello@gripshopos.com"
+        <Link
+          href="/contact"
           className="mt-8 inline-block rounded-sm bg-white px-6 py-3 text-sm font-semibold text-navy transition hover:bg-white/90"
         >
-          hello@gripshopos.com
-        </a>
+          Contact us
+        </Link>
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-blueline">
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-steel sm:flex-row">
-        <Logo className="h-5" />
-        <p>&copy; {new Date().getFullYear()} Grip. Built in Ontario.</p>
-      </div>
-    </footer>
   );
 }
