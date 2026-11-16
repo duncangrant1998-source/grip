@@ -4,51 +4,92 @@ import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata = { title: "Pricing — Grip" };
 
-const factors = [
-  {
-    title: "Shop size",
-    body: "How many bays and how many staff accounts you need — a two-bay shop and a ten-bay shop don't pay the same.",
-  },
-  {
-    title: "Which modules you use",
-    body: "Every shop uses scheduling and work orders. Not every shop needs the full staff time-clock or multi-location reporting.",
-  },
-  {
-    title: "How you're billing today",
-    body: "Switching from a whiteboard and a spreadsheet is a different conversation than switching off another shop management system.",
-  },
+const included = [
+  "Unlimited staff accounts",
+  "Every feature included — scheduling, work orders, parts, reports",
+  "Ontario HST handled automatically",
+  "No per-bay or per-seat charges",
 ];
 
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-white font-landing text-navy">
       <SiteHeader />
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-20 sm:pb-24 sm:pt-28">
+      <section className="mx-auto max-w-5xl px-6 pb-16 pt-20 sm:pb-20 sm:pt-28">
         <h1 className="max-w-xl text-4xl font-light leading-tight tracking-tight sm:text-5xl">
-          Pricing built around your shop, not a seat count.
+          One price. Everything included.
         </h1>
         <p className="mt-5 max-w-xl text-lg text-steel">
-          We're not quite ready to put a price list on this page — we'd
-          rather understand your shop first and give you a number that
-          actually fits it. Here's what goes into that conversation.
+          No per-bay charges, no per-seat charges, no sales call required to
+          find out what you&apos;ll pay. One flat price per shop, whether
+          you&apos;ve got two bays or ten.
         </p>
       </section>
+
       <section className="border-t border-blueline">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <div className="grid gap-10 sm:grid-cols-3">
-            {factors.map((f) => (
-              <div key={f.title} className="border-t-2 border-navy pt-4">
-                <h2 className="font-semibold">{f.title}</h2>
-                <p className="mt-1.5 text-steel">{f.body}</p>
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div className="flex flex-col border border-blueline p-8">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-steel">
+                Monthly
+              </h2>
+              <p className="mt-4 text-5xl font-light text-navy">
+                $200
+                <span className="text-lg font-normal text-steel"> CAD/mo</span>
+              </p>
+              <p className="mt-2 text-sm text-steel">Billed monthly. Cancel anytime.</p>
+              <Link
+                href="/contact"
+                className="mt-8 inline-block rounded-sm border border-navy px-6 py-3 text-center text-sm font-semibold text-navy transition hover:bg-navy hover:text-white"
+              >
+                Get started
+              </Link>
+            </div>
+
+            <div className="flex flex-col border-2 border-navy p-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-steel">
+                  Annual
+                </h2>
+                <span className="rounded-sm bg-shop px-2 py-1 text-xs font-semibold text-white">
+                  Save 25%
+                </span>
               </div>
-            ))}
+              <p className="mt-4 text-5xl font-light text-navy">
+                $150
+                <span className="text-lg font-normal text-steel"> CAD/mo</span>
+              </p>
+              <p className="mt-2 text-sm text-steel">
+                Billed annually at $1,800 CAD/year — $600 less than paying
+                monthly.
+              </p>
+              <Link
+                href="/contact"
+                className="mt-8 inline-block rounded-sm bg-shop px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-shop/90"
+              >
+                Get started
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-blueline pt-8">
+            <h3 className="font-semibold">Included on every plan</h3>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {included.map((item) => (
+                <li key={item} className="flex gap-2 text-steel">
+                  <span className="text-shop">—</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
+
       <section className="bg-shop">
         <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:py-20">
           <h2 className="text-2xl font-light tracking-tight text-white sm:text-3xl">
-            Get in touch and we&apos;ll walk through a number for your shop.
+            Ready to get GRIP running in your shop?
           </h2>
           <Link
             href="/contact"
