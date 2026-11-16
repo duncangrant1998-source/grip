@@ -22,7 +22,9 @@ export default function PricingPage() {
         <p className="mt-5 max-w-xl text-lg text-steel">
           No per-bay charges, no per-seat charges, no sales call required to
           find out what you&apos;ll pay. One flat price per shop, whether
-          you&apos;ve got two bays or ten.
+          you&apos;ve got two bays or ten. We&apos;re finalizing numbers
+          ahead of launch — reach out and we&apos;ll let you know as soon
+          as pricing is set.
         </p>
       </section>
 
@@ -33,41 +35,33 @@ export default function PricingPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-steel">
                 Monthly
               </h2>
-              <p className="mt-4 text-5xl font-light text-navy">
-                $200
-                <span className="text-lg font-normal text-steel"> CAD/mo</span>
+              <p className="mt-4 text-4xl font-light text-navy">
+                To be announced
               </p>
               <p className="mt-2 text-sm text-steel">Billed monthly. Cancel anytime.</p>
               <Link
                 href="/contact"
                 className="mt-8 inline-block rounded-sm border border-navy px-6 py-3 text-center text-sm font-semibold text-navy transition hover:bg-navy hover:text-white"
               >
-                Get started
+                Get notified
               </Link>
             </div>
 
             <div className="flex flex-col border-2 border-navy p-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-steel">
-                  Annual
-                </h2>
-                <span className="rounded-sm bg-shop px-2 py-1 text-xs font-semibold text-white">
-                  Save 25%
-                </span>
-              </div>
-              <p className="mt-4 text-5xl font-light text-navy">
-                $150
-                <span className="text-lg font-normal text-steel"> CAD/mo</span>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-steel">
+                Annual
+              </h2>
+              <p className="mt-4 text-4xl font-light text-navy">
+                To be announced
               </p>
               <p className="mt-2 text-sm text-steel">
-                Billed annually at $1,800 CAD/year — $600 less than paying
-                monthly.
+                Billed annually. Discounted versus paying monthly.
               </p>
               <Link
                 href="/contact"
                 className="mt-8 inline-block rounded-sm bg-shop px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-shop/90"
               >
-                Get started
+                Get notified
               </Link>
             </div>
           </div>
@@ -89,7 +83,7 @@ export default function PricingPage() {
       <section className="bg-shop">
         <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:py-20">
           <h2 className="text-2xl font-light tracking-tight text-white sm:text-3xl">
-            Ready to get GRIP running in your shop?
+            GRIP is coming soon. Want to hear when it&apos;s ready?
           </h2>
           <Link
             href="/contact"
