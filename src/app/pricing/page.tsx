@@ -7,7 +7,7 @@ export const metadata = { title: "Pricing — Grip" };
 const included = [
   "Unlimited staff accounts",
   "Every feature included — scheduling, work orders, parts, reports",
-  "Ontario HST handled automatically",
+  "No setup fees or hidden costs",
   "No per-bay or per-seat charges",
 ];
 

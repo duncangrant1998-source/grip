@@ -138,7 +138,7 @@ function FeaturesTeaser() {
 
 function Trust() {
   const stats = [
-    { value: "13%", label: "Ontario HST, calculated automatically on every invoice" },
+    { value: "$0", label: "extra per staff account — one flat price covers everyone" },
     { value: "4", label: "staff roles, each seeing only what's theirs" },
     { value: "0", label: "shops that can see another shop's data" },
   ];

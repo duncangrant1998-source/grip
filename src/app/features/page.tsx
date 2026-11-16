@@ -29,8 +29,8 @@ const features = [
     body: "See what's actually happening in the shop: open work, parts moving slowly, where the hours go, broken down by tech or by job.",
   },
   {
-    title: "Built for Ontario shops",
-    body: "HST is calculated correctly on every invoice, out of the box, including exemptions. Billing that already understands Canadian tax rules, not retrofitted for them.",
+    title: "One flat price",
+    body: "No per-bay or per-seat charges. Add staff as you grow and your bill doesn't move — the more your team uses Grip, the cheaper it gets per person.",
   },
   {
     title: "Role-based access",
