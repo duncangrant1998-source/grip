@@ -6,6 +6,7 @@ import { inShop } from "@/lib/auth";
 import { runAction, redirect, type ActionState } from "@/lib/action";
 import { can, canTransition, type WorkOrderStatus } from "@/lib/permissions";
 import { canSeeOrder, ownEmployeeId } from "@/lib/queries";
+import { withIdempotency, idemKeyFrom } from "@/lib/idempotency";
 
 const uuid = z.string().uuid();
 const num = (max: number) =>
@@ -41,13 +42,19 @@ export async function createOrder(_prev: ActionState, form: FormData): Promise<A
       : bad?.message ?? "Check the form and try again." };
   }
   const o = parsed.data;
+  const idemKey = idemKeyFrom(form);
 
   return runAction("workorders.create", async (session) => {
-    const [row] = await inShop(session, (tx) => tx<{ create_work_order: string }[]>`
-      SELECT grip.create_work_order(${o.customer_id}, ${o.vehicle_id},
-                                    ${o.concern ?? null}, ${o.mileage_in ?? null})`);
+    const { id } = await inShop(session, (tx) =>
+      withIdempotency(tx, session.tenantId, "orders.create", idemKey, async () => {
+        const [row] = await tx<{ create_work_order: string }[]>`
+          SELECT grip.create_work_order(${o.customer_id}, ${o.vehicle_id},
+                                        ${o.concern ?? null}, ${o.mileage_in ?? null})`;
+        return { id: row.create_work_order };
+      }),
+    );
     revalidatePath("/app/orders");
-    redirect(`/app/orders/${row.create_work_order}`);
+    redirect(`/app/orders/${id}`);
   });
 }
 

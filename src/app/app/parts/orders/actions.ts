@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { inShop } from "@/lib/auth";
 import { runAction, redirect, type ActionState } from "@/lib/action";
+import { withIdempotency, idemKeyFrom } from "@/lib/idempotency";
 
 const uuid = z.string().uuid();
 const optUuid = z.preprocess((v) => (v === "" || v == null ? undefined : v), uuid.optional());
@@ -27,26 +28,38 @@ export async function createPurchaseOrder(_prev: ActionState, form: FormData): P
     .safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Choose a supplier." };
   const o = parsed.data;
+  const idemKey = idemKeyFrom(form);
 
   return runAction("purchaseOrders.manage", async (session) => {
-    const [row] = await inShop(session, (tx) => tx<{ id: string }[]>`
-      SELECT grip.create_purchase_order(${o.supplier_id}, ${o.expected_at ?? null},
-                                        ${o.tax_rate_id ?? null}) AS id`);
+    const { id } = await inShop(session, (tx) =>
+      withIdempotency(tx, session.tenantId, "parts.createPurchaseOrder", idemKey, async () => {
+        const [row] = await tx<{ id: string }[]>`
+          SELECT grip.create_purchase_order(${o.supplier_id}, ${o.expected_at ?? null},
+                                            ${o.tax_rate_id ?? null}) AS id`;
+        return { id: row.id };
+      }),
+    );
     revalidatePath("/app/parts/orders");
-    redirect(`/app/parts/orders/${row.id}`);
+    redirect(`/app/parts/orders/${id}`);
   });
 }
 
 export async function createReorder(_prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = z.object({ supplier_id: uuid }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Unknown supplier." };
+  const idemKey = idemKeyFrom(form);
 
   return runAction("purchaseOrders.manage", async (session) => {
-    const [row] = await inShop(session, (tx) => tx<{ id: string }[]>`
-      SELECT grip.create_reorder_po(${parsed.data.supplier_id}) AS id`);
+    const { id } = await inShop(session, (tx) =>
+      withIdempotency(tx, session.tenantId, "parts.createReorder", idemKey, async () => {
+        const [row] = await tx<{ id: string }[]>`
+          SELECT grip.create_reorder_po(${parsed.data.supplier_id}) AS id`;
+        return { id: row.id };
+      }),
+    );
     revalidatePath("/app/parts/orders");
     revalidatePath("/app/parts/reorder");
-    redirect(`/app/parts/orders/${row.id}`);
+    redirect(`/app/parts/orders/${id}`);
   });
 }
 
