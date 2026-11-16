@@ -18,6 +18,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/oswald": "^5.0.0",
+    "@fontsource/work-sans": "^5.0.0",
     "@node-rs/argon2": "^2.0.2",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.38.4",

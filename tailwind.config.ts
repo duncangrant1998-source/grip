@@ -13,8 +13,8 @@ export default {
         paper: "#f7f5f0",
       },
       fontFamily: {
-        display: ["var(--font-oswald)", "sans-serif"],
-        body: ["var(--font-work-sans)", "sans-serif"],
+        display: ["Oswald", "sans-serif"],
+        body: ['"Work Sans"', "sans-serif"],
       },
     },
   },

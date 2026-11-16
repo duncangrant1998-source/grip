@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Oswald, Work_Sans } from "next/font/google";
+import "@fontsource/oswald/500.css";
+import "@fontsource/oswald/600.css";
+import "@fontsource/oswald/700.css";
+import "@fontsource/work-sans/400.css";
+import "@fontsource/work-sans/500.css";
+import "@fontsource/work-sans/600.css";
 import "./globals.css";
-
-const oswald = Oswald({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-oswald",
-});
-
-const workSans = Work_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-work-sans",
-});
 
 export const metadata: Metadata = {
   title: "Grip",
@@ -23,7 +16,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${oswald.variable} ${workSans.variable}`}>
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
