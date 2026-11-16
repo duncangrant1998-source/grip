@@ -14,7 +14,6 @@ export default async function Home() {
       <Problem />
       <Features />
       <Trust />
-      <Demo />
       <Contact />
       <Footer />
     </main>
@@ -29,9 +28,6 @@ function Header() {
         <nav className="flex items-center gap-6 text-sm font-medium text-steel">
           <a href="#features" className="hidden hover:text-ink sm:inline">
             Features
-          </a>
-          <a href="#demo" className="hidden hover:text-ink sm:inline">
-            Try it
           </a>
           <Link
             href="/login"
@@ -61,16 +57,16 @@ function Hero() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <a
-            href="#demo"
+            href="#contact"
             className="rounded-md bg-shop px-5 py-3 text-sm font-semibold text-white transition hover:bg-shop/90"
           >
-            See a live demo
+            Get in touch
           </a>
           <a
-            href="#contact"
+            href="#features"
             className="rounded-md border border-slate-300 px-5 py-3 text-sm font-semibold text-ink transition hover:border-slate-400"
           >
-            Get in touch
+            See features
           </a>
         </div>
       </div>
@@ -190,42 +186,6 @@ function Trust() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Demo() {
-  return (
-    <section id="demo" className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-        <h2 className="text-2xl font-bold sm:text-3xl">See it for yourself.</h2>
-        <p className="mt-3 max-w-2xl text-steel">
-          This is a working demo shop with real sample data — open work orders,
-          scheduled appointments, parts on the shelf. Sign in and look around.
-        </p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-steel">
-              Shop admin
-            </p>
-            <p className="mt-1 font-mono text-sm">admin@redline.test</p>
-            <p className="font-mono text-sm text-steel">demo1234</p>
-          </div>
-          <div className="rounded-lg bg-slate-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-steel">
-              Service advisor
-            </p>
-            <p className="mt-1 font-mono text-sm">service@redline.test</p>
-            <p className="font-mono text-sm text-steel">demo1234</p>
-          </div>
-        </div>
-        <Link
-          href="/login"
-          className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-black"
-        >
-          Sign in to the demo
-        </Link>
       </div>
     </section>
   );
