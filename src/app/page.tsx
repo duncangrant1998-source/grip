@@ -49,7 +49,7 @@ function Hero() {
           Shop management software
         </p>
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          Run your shop without the chaos.
+          Get a Grip on your business.
         </h1>
         <p className="mt-5 text-lg text-steel">
           Scheduling, work orders, parts, and your whole team — in one place, built
