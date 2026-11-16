@@ -33,12 +33,15 @@ const g = globalThis as unknown as {
 };
 
 export function appSql(): postgres.Sql {
-  g.__gripAppSql ??= postgres(required("DATABASE_URL"), { max: 10 });
+  // prepare: false — DATABASE_URL in production runs through Neon's pooled
+  // (pgbouncer, transaction-mode) endpoint, which cannot hold prepared
+  // statements across pooled connections.
+  g.__gripAppSql ??= postgres(required("DATABASE_URL"), { max: 10, prepare: false });
   return g.__gripAppSql;
 }
 
 export function ownerSql(): postgres.Sql {
-  g.__gripOwnerSql ??= postgres(required("DATABASE_URL_OWNER"), { max: 4 });
+  g.__gripOwnerSql ??= postgres(required("DATABASE_URL_OWNER"), { max: 4, prepare: false });
   return g.__gripOwnerSql;
 }
 
