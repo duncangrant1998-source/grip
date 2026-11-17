@@ -18,10 +18,10 @@ export default function ContactPage() {
             be talking directly with the people building it.
           </p>
           <a
-            href="mailto:hello@gripshopos.com"
+            href="mailto:admin@gripshopos.com"
             className="mt-8 inline-block rounded-sm bg-shop px-6 py-3 text-sm font-semibold text-white transition hover:bg-shop/90"
           >
-            hello@gripshopos.com
+            admin@gripshopos.com
           </a>
         </div>
       </section>
