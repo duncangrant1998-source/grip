@@ -108,3 +108,15 @@ string change; with a transaction-mode pooler, add `prepare: false` to the
 Demo logins after `npm run db:seed` (password `demo1234`): `service@`, `parts@`,
 `tech@`, `admin@` at `redline.test` and `northside.test`, plus
 `operator@grip.test` as platform super-admin.
+
+## Platform console
+
+`/platform` (link in the nav as "Platform", visible only to a platform admin)
+is the operator's own backend: every shop, support tickets shops file from
+their own account page, security events (five-plus failed sign-ins for one
+email in 15 minutes, or a promotion to shop admin / platform admin), and
+manual payment tracking ahead of Stripe (§8 of `docs/DESIGN.md`). Set
+`RESEND_API_KEY` / `PLATFORM_NOTIFY_FROM` / `PLATFORM_NOTIFY_TO` to also email
+the operator when a support request or security event comes in — unset,
+everything still lands in the console's notification feed, just without the
+email.

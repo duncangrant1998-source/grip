@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireSession, inShop } from "@/lib/auth";
 import { can, departmentsFor, ROLE_LABELS, type Department } from "@/lib/permissions";
+import { unreadNotificationCount } from "@/lib/platform-queries";
 import { Logo } from "@/components/Logo";
 import { logout } from "../login/actions";
 
@@ -21,6 +22,7 @@ export default async function PortalLayout({ children }: { children: React.React
   );
 
   const departments = departmentsFor(session.role);
+  const unreadCount = session.isPlatformAdmin ? await unreadNotificationCount(session) : 0;
 
   return (
     <div className="min-h-screen">
@@ -47,7 +49,16 @@ export default async function PortalLayout({ children }: { children: React.React
               <NavLink href="/app/reports">{can(session.role, "reports.margin") ? "Reports" : "Parts sales"}</NavLink>
             )}
             {can(session.role, "timeclock.own") && <NavLink href="/app/time">Time clock</NavLink>}
-            {session.isPlatformAdmin && <NavLink href="/platform">All shops</NavLink>}
+            {session.isPlatformAdmin && (
+              <NavLink href="/platform">
+                Platform
+                {unreadCount > 0 && (
+                  <span className="ml-1.5 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </NavLink>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-3 text-sm">

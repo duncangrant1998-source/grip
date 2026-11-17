@@ -6,6 +6,7 @@ import { z } from "zod";
 import { inShop } from "@/lib/auth";
 import { runAction, redirect, type ActionState } from "@/lib/action";
 import { addDays, isDateString } from "@/lib/dates";
+import { emailPlatformAdmin } from "@/lib/notify";
 
 const uuid = z.string().uuid();
 const optUuid = z.preprocess((v) => (v === "" || v == null ? undefined : v), uuid.optional());
@@ -159,10 +160,13 @@ export async function updateAccess(_prev: ActionState, form: FormData): Promise<
   const a = parsed.data;
 
   return runAction("staff.manage", async (session) => {
-    await inShop(session, (tx) => tx`
-      SELECT grip.update_user_access(${a.user_id}, ${a.role}::grip.user_role, ${a.is_active})`);
+    const [notification] = await inShop(session, (tx) => tx<{ notify_title: string | null; notify_body: string | null }[]>`
+      SELECT * FROM grip.update_user_access(${a.user_id}, ${a.role}::grip.user_role, ${a.is_active})`);
     revalidatePath(`/app/admin/staff/${a.employee_id}`);
     revalidatePath("/app/admin/staff");
+    if (notification?.notify_title && notification.notify_body) {
+      await emailPlatformAdmin({ title: notification.notify_title, body: notification.notify_body });
+    }
   });
 }
 
