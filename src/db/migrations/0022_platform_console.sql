@@ -349,6 +349,11 @@ $$;
 -- or two nulls when the change was not a promotion — so the caller (the
 -- server action) knows whether to send the operator an email, without a
 -- second query to work out what changed.
+--
+-- Postgres won't let CREATE OR REPLACE change a function's return type
+-- (0008 defined this as RETURNS void), so the old signature has to go first.
+DROP FUNCTION grip.update_user_access(uuid, grip.user_role, boolean);
+
 CREATE OR REPLACE FUNCTION grip.update_user_access(
   p_user_id   uuid,
   p_role      grip.user_role,
