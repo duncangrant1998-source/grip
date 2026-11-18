@@ -1,33 +1,31 @@
 import "server-only";
 
 /**
- * Best-effort email for the platform console's notification feed.
+ * Best-effort email, sent through Resend's plain HTTP API with the runtime's
+ * built-in `fetch` — deliberately dependency-free, since no Resend SDK is
+ * installed (this environment cannot run `npm install`). Any other
+ * transactional-email provider with an HTTP API would drop in the same way.
  *
- * The in-app record (grip.platform_notifications) is written by the database
- * functions in 0022 and is the source of truth — it exists whether or not
- * this ever sends. Email is a convenience on top so the operator hears about
- * a support request or security event without having the console open.
+ * Shared by two callers with different jobs:
+ *   - emailPlatformAdmin  — the platform console's notification feed (support
+ *     requests, security events). The in-app record (grip.platform_notifications)
+ *     is written by the database functions in 0022 and is the source of
+ *     truth regardless of whether this ever sends.
+ *   - sendPasswordResetEmail — the one piece of outbound mail that actually
+ *     has to arrive for the feature to work (0024's self-service reset).
+ *     There is no in-app fallback if this silently no-ops, so a send failure
+ *     here is also reported to the platform admin via emailPlatformAdmin.
  *
- * Deliberately dependency-free: no Resend SDK is installed (this environment
- * cannot run `npm install`), so this calls Resend's plain HTTP API with the
- * runtime's built-in `fetch`. Any other transactional-email provider with an
- * HTTP API would drop in the same way.
- *
- * Needs three env vars, none of which are set yet:
- *   RESEND_API_KEY        — from a Resend account of GRIP's own (see the note
- *                            in .env.example — do not reuse another project's)
- *   PLATFORM_NOTIFY_FROM  — a verified sending address on that domain,
- *                            e.g. notifications@gripshopos.com
- *   PLATFORM_NOTIFY_TO    — where the alert should land, e.g.
- *                            admin@gripshopos.com
- * Until all three are set this is a silent no-op — the console and its
- * notification bell work regardless.
+ * Needs RESEND_API_KEY and a verified sending address, neither of which are
+ * set by default — see .env.example. Until they're set, both callers below
+ * are silent no-ops: the console and its notification bell still work, and
+ * requesting a reset link always returns the same generic confirmation either
+ * way (see login/forgot/actions.ts) — only the email itself goes missing.
  */
-export async function emailPlatformAdmin(input: { title: string; body: string }): Promise<void> {
+async function sendViaResend(input: { to: string; subject: string; text: string }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.PLATFORM_NOTIFY_FROM;
-  const to = process.env.PLATFORM_NOTIFY_TO;
-  if (!apiKey || !from || !to) return;
+  if (!apiKey || !from) return false;
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -36,19 +34,53 @@ export async function emailPlatformAdmin(input: { title: string; body: string })
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from,
-        to,
-        subject: `[Grip] ${input.title}`,
-        text: input.body,
-      }),
+      body: JSON.stringify({ from, to: input.to, subject: input.subject, text: input.text }),
     });
     if (!res.ok) {
-      console.error("emailPlatformAdmin: Resend returned", res.status, await res.text().catch(() => ""));
+      console.error("sendViaResend: Resend returned", res.status, await res.text().catch(() => ""));
+      return false;
     }
+    return true;
   } catch (err) {
-    // Never let a notification email failure break the request that
-    // triggered it — the in-app notification already exists.
-    console.error("emailPlatformAdmin failed:", err);
+    console.error("sendViaResend failed:", err);
+    return false;
+  }
+}
+
+export async function emailPlatformAdmin(input: { title: string; body: string }): Promise<void> {
+  const to = process.env.PLATFORM_NOTIFY_TO;
+  if (!to) return;
+  await sendViaResend({ to, subject: `[Grip] ${input.title}`, text: input.body });
+}
+
+/**
+ * One email per matched account (login/forgot/actions.ts sends one of these
+ * per shop when the same address has a login at more than one). The link
+ * carries the only copy of the raw token that will ever exist outside the
+ * person's inbox — the database only ever sees its hash.
+ */
+export async function sendPasswordResetEmail(input: {
+  to: string;
+  fullName: string;
+  tenantName: string;
+  resetUrl: string;
+}): Promise<void> {
+  const sent = await sendViaResend({
+    to: input.to,
+    subject: `Reset your Grip password — ${input.tenantName}`,
+    text:
+      `Hi ${input.fullName},\n\n` +
+      `Someone asked to reset the password for your Grip login at ${input.tenantName}. ` +
+      `If that was you, set a new password here (this link works once and expires in 30 minutes):\n\n` +
+      `${input.resetUrl}\n\n` +
+      `If you didn't request this, you can ignore this email — your password hasn't changed.`,
+  });
+
+  if (!sent) {
+    await emailPlatformAdmin({
+      title: "Password-reset email failed to send",
+      body: `A reset link for ${input.to} (${input.tenantName}) was requested but could not be emailed. ` +
+        `Check RESEND_API_KEY / PLATFORM_NOTIFY_FROM.`,
+    });
   }
 }
