@@ -229,9 +229,12 @@ describe("what it will not do", () => {
       const [actor] = await owner()<Row[]>`
         INSERT INTO grip.users (tenant_id, email, password_hash, full_name, role)
         VALUES (${lone.tenantId}, 'actor@lone.test', 'h', 'Actor', 'service_advisor') RETURNING id`;
-      // Even a non-administrator actor cannot orphan the shop; the guard sits in the database.
+      // createShop's shop_admin is this shop's first admin, so it's also the
+      // protected owner — a non-administrator actor hits that guard before
+      // even reaching the "don't orphan the shop" one, which is fine: the
+      // outcome (the shop keeps its one administrator) is the same either way.
       await expect(asTenant(app(), { tenantId: lone.tenantId, userId: actor.id }, (tx) => tx`
-        SELECT grip.remove_employee(${victim.id}, NULL)`)).rejects.toThrow(/at least one active administrator/i);
+        SELECT grip.remove_employee(${victim.id}, NULL)`)).rejects.toThrow(/shop owner/i);
     } finally {
       await dropShops("rm-lone");
     }

@@ -26,7 +26,7 @@ export default async function SalesPage({
   const sp = await searchParams;
   const scope = (TABS.find((t) => t.key === sp.scope)?.key ?? "all") as "open" | "done" | "all";
   const sales = await listCounterSales(session, scope);
-  const canSell = can(session.role, "counterSales.create");
+  const canSell = can(session.role, "counterSales.create", session.extraRoles);
 
   return (
     <div className="space-y-6">

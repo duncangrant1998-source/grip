@@ -29,14 +29,14 @@ export default async function NewAppointmentPage({
   }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "appointments.edit")) redirect("/app?denied=booking appointments");
+  if (!can(session.role, "appointments.edit", session.extraRoles)) redirect("/app?denied=booking appointments");
 
   const sp = await searchParams;
   const ctx = await getScheduleContext(session);
   const date = isDateString(sp.date) ? sp.date : ctx.today;
   const time = /^([01]\d|2[0-3]):[0-5]\d$/.test(sp.time ?? "") ? sp.time! : "09:00";
   const bay = /^[0-9a-f-]{36}$/i.test(sp.bay ?? "") ? sp.bay! : "";
-  const canAdd = can(session.role, "customers.edit");
+  const canAdd = can(session.role, "customers.edit", session.extraRoles);
 
   const carryParams = new URLSearchParams({ date, time });
   if (bay) carryParams.set("bay", bay);

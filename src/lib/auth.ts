@@ -120,7 +120,7 @@ export async function requireSession(): Promise<Session> {
 
 export async function requireDepartment(dept: Department): Promise<Session> {
   const session = await requireSession();
-  if (!canAccessDepartment(session.role, dept)) redirect("/app?denied=" + dept);
+  if (!canAccessDepartment(session.role, dept, session.extraRoles)) redirect("/app?denied=" + dept);
   return session;
 }
 

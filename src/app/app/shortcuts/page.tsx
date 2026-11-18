@@ -14,12 +14,12 @@ export const dynamic = "force-dynamic";
 
 export default async function ShortcutsPage() {
   const session = await requireSession();
-  if (!can(session.role, "shortcuts.manage")) redirect("/app?denied=shortcuts");
+  if (!can(session.role, "shortcuts.manage", session.extraRoles)) redirect("/app?denied=shortcuts");
   const shortcuts = await listShortcuts(session);
 
   return (
     <div className="space-y-5">
-      <ServiceNav role={session.role} active="shortcuts" />
+      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />
       <div>
         <h1 className="text-2xl font-bold">Service shortcuts</h1>
         <p className="max-w-3xl text-sm text-steel">

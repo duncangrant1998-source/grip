@@ -22,8 +22,8 @@ export default async function ReportsPage({
   searchParams: Promise<{ from?: string; to?: string; grain?: string }>;
 }) {
   const session = await requireSession();
-  const full = can(session.role, "reports.margin");
-  const partsOnly = !full && can(session.role, "reports.partsOnly");
+  const full = can(session.role, "reports.margin", session.extraRoles);
+  const partsOnly = !full && can(session.role, "reports.partsOnly", session.extraRoles);
   if (!full && !partsOnly) redirect("/app?denied=reports");
 
   const ctx = await getScheduleContext(session);

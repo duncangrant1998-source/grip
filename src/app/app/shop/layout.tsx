@@ -10,7 +10,7 @@ import { ShopNav } from "./ShopNav";
  */
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSession();
-  if (!can(session.role, "settings.manage")) redirect("/app?denied=your shop's settings");
+  if (!can(session.role, "settings.manage", session.extraRoles)) redirect("/app?denied=your shop's settings");
 
   return (
     <div>

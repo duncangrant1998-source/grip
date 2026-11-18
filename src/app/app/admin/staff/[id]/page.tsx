@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireDepartment } from "@/lib/auth";
 import { getStaff, staffRecord, unlinkedLogins } from "@/lib/admin-queries";
-import { ROLE_LABELS } from "@/lib/permissions";
+import { ALL_ROLES, ROLE_LABELS } from "@/lib/permissions";
 import { dateTime, money } from "@/lib/format";
 import { formatShort } from "@/lib/dates";
 import { ActionForm } from "@/components/ActionForm";
@@ -62,7 +62,12 @@ export default async function StaffMemberPage({ params }: { params: Promise<{ id
             <dt className="text-steel">Employment</dt><dd className="capitalize">{s.employment_type.replace("_", " ")}</dd>
             <dt className="text-steel">Pay per hour</dt><dd>{money(s.hourly_rate)}</dd>
             <dt className="text-steel">Was a technician</dt><dd>{s.is_technician ? "Yes" : "No"}</dd>
-            <dt className="text-steel">Role at Grip</dt><dd>{s.role ? ROLE_LABELS[s.role] : "No login"}</dd>
+            <dt className="text-steel">Roles at Grip</dt>
+            <dd>
+              {s.role
+                ? [s.role, ...s.extra_roles].map((r) => ROLE_LABELS[r]).join(", ")
+                : "No login"}
+            </dd>
             <dt className="text-steel">First / last clocked</dt>
             <dd>{rec.first_day ? `${formatShort(rec.first_day)} – ${formatShort(rec.last_day!)}` : "Never clocked in"}</dd>
           </dl>
@@ -157,21 +162,45 @@ export default async function StaffMemberPage({ params }: { params: Promise<{ id
               {s.email}
               {s.last_login_at ? ` · last signed in ${dateTime(s.last_login_at)}` : " · has not signed in yet"}
             </p>
-            <ActionForm action={updateAccess} className="flex flex-wrap items-end gap-3" keepAfterSuccess>
-              <input type="hidden" name="employee_id" value={s.id} />
-              <input type="hidden" name="user_id" value={s.user_id} />
-              <div>
-                <label className={label} htmlFor="role">Role</label>
-                <select id="role" name="role" defaultValue={s.role ?? "service_advisor"} className={input}>
-                  {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              </div>
-              <label className="flex items-center gap-2 pb-2 text-sm">
-                <input type="checkbox" name="is_active" defaultChecked={s.login_active ?? true} /> Can sign in
-              </label>
-              <button className={btnGhost}>Update access</button>
-            </ActionForm>
-            {isMe && <p className="mt-2 text-xs text-steel">This is you. A shop must always keep at least one active administrator.</p>}
+            {s.is_shop_owner ? (
+              <p className="rounded-md bg-slate-100 px-4 py-3 text-sm text-steel">
+                <strong className="text-ink">Shop owner</strong> — always has full access to every role. This
+                can&apos;t be changed here, even by another administrator, so the shop can never be locked out of
+                its own account.
+              </p>
+            ) : (
+              <>
+                <ActionForm action={updateAccess} className="flex flex-wrap items-end gap-4" keepAfterSuccess>
+                  <input type="hidden" name="employee_id" value={s.id} />
+                  <input type="hidden" name="user_id" value={s.user_id} />
+                  <div>
+                    <span className={label}>Roles</span>
+                    <div className="mt-1 flex flex-wrap gap-4">
+                      {ALL_ROLES.map((r) => (
+                        <label key={r} className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            name="roles"
+                            value={r}
+                            defaultChecked={r === s.role || s.extra_roles.includes(r)}
+                          />
+                          {ROLE_LABELS[r]}
+                        </label>
+                      ))}
+                    </div>
+                    <p className="mt-1 text-xs text-steel">
+                      Tick every role this person should have — ticking more than one adds their access
+                      together, e.g. a technician also ticked for parts advisor can work the counter too.
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-2 pb-2 text-sm">
+                    <input type="checkbox" name="is_active" defaultChecked={s.login_active ?? true} /> Can sign in
+                  </label>
+                  <button className={btnGhost}>Update access</button>
+                </ActionForm>
+                {isMe && <p className="mt-2 text-xs text-steel">This is you. A shop must always keep at least one active administrator.</p>}
+              </>
+            )}
 
             <div className="mt-5 border-t border-slate-100 pt-4">
               <ActionForm action={resetPassword} className="flex flex-wrap items-end gap-3">
@@ -230,7 +259,7 @@ export default async function StaffMemberPage({ params }: { params: Promise<{ id
       </section>
 
       {/* Removing someone is final for the account, so it asks first. */}
-      {!isMe && (
+      {!isMe && !s.is_shop_owner && (
         <section className={`${card} border-red-200 p-5`}>
           <h2 className="mb-1 font-semibold text-red-800">Remove from staff</h2>
           <p className="mb-3 max-w-2xl text-sm text-steel">

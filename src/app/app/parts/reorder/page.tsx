@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function ReorderPage() {
   const session = await requireDepartment("parts");
   const groups = await reorderSuggestions(session);
-  const canOrder = can(session.role, "purchaseOrders.manage");
+  const canOrder = can(session.role, "purchaseOrders.manage", session.extraRoles);
 
   return (
     <div className="space-y-6">

@@ -78,7 +78,7 @@ export default async function SuppliersPage({
   const session = await requireDepartment("parts");
   const { panel } = await searchParams;
   const suppliers = await listSuppliers(session);
-  const canEdit = can(session.role, "purchaseOrders.manage");
+  const canEdit = can(session.role, "purchaseOrders.manage", session.extraRoles);
   const adding = canEdit && (panel === "add" || suppliers.length === 0);
 
   return (

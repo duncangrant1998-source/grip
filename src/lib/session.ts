@@ -15,6 +15,10 @@ export type Session = {
   role: Role;
   fullName: string;
   isPlatformAdmin: boolean;
+  /** Extra roles the admin has ticked for this login, on top of its base role. */
+  extraRoles: Role[];
+  /** The shop's one permanent owner — their access can't be edited from the Staff tab, by anyone. */
+  isShopOwner: boolean;
 };
 
 function key(): Uint8Array {
@@ -77,6 +81,8 @@ export const getSession = cache(async (): Promise<Session | null> => {
         full_name: string;
         tenant_slug: string;
         is_platform_admin: boolean;
+        extra_roles: Role[] | null;
+        is_shop_owner: boolean;
       }[]
     >`SELECT * FROM grip.resolve_session(${sessionId})`,
   );
@@ -92,5 +98,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
     role: row.role,
     fullName: row.full_name,
     isPlatformAdmin: row.is_platform_admin,
+    extraRoles: row.extra_roles ?? [],
+    isShopOwner: row.is_shop_owner,
   };
 });

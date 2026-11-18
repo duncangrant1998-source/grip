@@ -21,7 +21,7 @@ export default async function SchedulePage({
   searchParams: Promise<{ view?: string; date?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "appointments.view")) redirect("/app?denied=the schedule");
+  if (!can(session.role, "appointments.view", session.extraRoles)) redirect("/app?denied=the schedule");
 
   const sp = await searchParams;
   const ctx = await getScheduleContext(session);
@@ -42,7 +42,7 @@ export default async function SchedulePage({
     listBays(session),
   ]);
 
-  const canEdit = can(session.role, "appointments.edit");
+  const canEdit = can(session.role, "appointments.edit", session.extraRoles);
   const isTech = session.role === "technician";
 
   // Keep the grid tall enough that nothing booked outside normal hours disappears.
@@ -121,7 +121,7 @@ export default async function SchedulePage({
   return (
     <div className="space-y-5">
       <LiveRefresh everyMs={20000} />
-      <ServiceNav role={session.role} active="schedule" />
+      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="schedule" />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -184,7 +184,7 @@ export default async function SchedulePage({
             {view !== "month" && ` · ${formatMinutes(openHour * 60)}–${formatMinutes(closeHour * 60)}`}
           </span>
         </div>
-        {can(session.role, "settings.manage") && (
+        {can(session.role, "settings.manage", session.extraRoles) && (
           <Link href="/app/shop/bays" className="font-medium underline hover:text-ink">Manage bays</Link>
         )}
       </div>

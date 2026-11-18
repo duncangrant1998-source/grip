@@ -35,8 +35,8 @@ export default async function InventoryPage({
   const cat = sp.cat ?? "";
   const sub = cat ? (sp.sub ?? "") : "";
 
-  const canEdit = can(session.role, "inventory.edit");
-  const showCost = can(session.role, "parts.viewCost");
+  const canEdit = can(session.role, "inventory.edit", session.extraRoles);
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
 
   // A VIN in the search box becomes "parts for that vehicle".
   const { vehicle, vinError } = await resolvePartSearch(q);

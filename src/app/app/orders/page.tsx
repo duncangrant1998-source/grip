@@ -37,7 +37,7 @@ export default async function OrdersPage({
   searchParams: Promise<{ scope?: string; q?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "workorders.view")) redirect("/app?denied=orders");
+  if (!can(session.role, "workorders.view", session.extraRoles)) redirect("/app?denied=orders");
 
   const sp = await searchParams;
   const scope: Scope = sp.scope && sp.scope in SCOPES ? (sp.scope as Scope) : "open";
@@ -45,13 +45,13 @@ export default async function OrdersPage({
 
   const orders = await listOrders(session, { scope, q });
   const isTech = session.role === "technician";
-  const showTabs = can(session.role, "appointments.view") || session.role !== "parts_advisor";
+  const showTabs = can(session.role, "appointments.view", session.extraRoles) || session.role !== "parts_advisor";
 
   return (
     <div className="space-y-5">
       <LiveRefresh everyMs={10000} />
       {showTabs && (
-        <ServiceNav role={session.role} active={scope === "all" ? "open" : scope} />
+        <ServiceNav role={session.role} extraRoles={session.extraRoles} active={scope === "all" ? "open" : scope} />
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -71,7 +71,7 @@ export default async function OrdersPage({
             />
             <button className={btn}>Search</button>
           </form>
-          {can(session.role, "workorders.create") && (
+          {can(session.role, "workorders.create", session.extraRoles) && (
             <Link href="/app/orders/new" className={btn}>New quote</Link>
           )}
         </div>
@@ -94,7 +94,7 @@ export default async function OrdersPage({
           <tbody className="divide-y divide-slate-100">
             {orders.map((o) => {
               const next = NEXT_STEP[o.status];
-              const may = next && canTransition(session.role, next.to);
+              const may = next && canTransition(session.role, next.to, session.extraRoles);
               return (
                 <ClickRow key={o.id} href={`/app/orders/${o.id}`}>
                   <td className="px-4 py-3 font-medium">

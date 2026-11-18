@@ -350,10 +350,10 @@ export async function createCustomerWithVehicle(_prev: ActionState, form: FormDa
 
   return runAction("customers.edit", async (session) => {
     if (then.kind === "sale") {
-      if (!can(session.role, "counterSales.create")) {
+      if (!can(session.role, "counterSales.create", session.extraRoles)) {
         throw Object.assign(new Error("You don't have permission to change counter sales."), { code: "P0001" });
       }
-    } else if (then.kind !== "appointment" && !can(session.role, "workorders.create")) {
+    } else if (then.kind !== "appointment" && !can(session.role, "workorders.create", session.extraRoles)) {
       throw Object.assign(new Error("You don't have permission to start work orders."), { code: "P0001" });
     }
 
@@ -429,7 +429,7 @@ export async function addVehicleInline(_prev: ActionState, form: FormData): Prom
   const d = v.data;
 
   return runAction("customers.edit", async (session) => {
-    if (then.kind !== "appointment" && !can(session.role, "workorders.create")) {
+    if (then.kind !== "appointment" && !can(session.role, "workorders.create", session.extraRoles)) {
       throw Object.assign(new Error("You don't have permission to start work orders."), { code: "P0001" });
     }
 

@@ -35,8 +35,8 @@ export default async function SalePage({
   const { sale, lines, taxes } = data;
 
   const isOpen = sale.status === "open";
-  const maySell = isOpen && can(session.role, "counterSales.create");
-  const showCost = can(session.role, "parts.viewCost");
+  const maySell = isOpen && can(session.role, "counterSales.create", session.extraRoles);
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
 
   const [taxRates, hits] = await Promise.all([
     maySell ? listTaxRates(session) : Promise.resolve([]),

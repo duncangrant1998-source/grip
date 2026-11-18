@@ -25,10 +25,10 @@ export default async function NewQuotePage({
   searchParams: Promise<{ customer?: string; q?: string; panel?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "workorders.create")) redirect("/app?denied=quotes");
+  if (!can(session.role, "workorders.create", session.extraRoles)) redirect("/app?denied=quotes");
 
   const sp = await searchParams;
-  const canAdd = can(session.role, "customers.edit");
+  const canAdd = can(session.role, "customers.edit", session.extraRoles);
   const customerId = /^[0-9a-f-]{36}$/i.test(sp.customer ?? "") ? sp.customer! : null;
 
   // Step 2: a customer is chosen. Pick one of their vehicles — or add one.

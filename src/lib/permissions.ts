@@ -78,8 +78,16 @@ const MATRIX: Record<Role, ReadonlySet<Action>> = {
   ]),
 };
 
-export function can(role: Role, action: Action): boolean {
-  return MATRIX[role].has(action);
+// A shop admin can give a staff member one or more *extra* roles on top of
+// their own, from the Staff tab's role picker — e.g. a technician who is also
+// ticked for parts advisor gets everything a parts advisor can do, in
+// addition to whatever being a technician already gives them. It is purely
+// additive: ticking a role never takes anything away, and unticking one only
+// removes what that specific role alone granted (something another checked
+// role still grants stays granted).
+export function can(role: Role, action: Action, extraRoles: readonly Role[] = []): boolean {
+  if (MATRIX[role].has(action)) return true;
+  return extraRoles.some((r) => MATRIX[r].has(action));
 }
 
 export type WorkOrderStatus =
@@ -94,10 +102,20 @@ export type WorkOrderStatus =
  * taking payment and cancelling stay at the service desk. The parts desk
  * contributes lines to the order but does not steer its lifecycle.
  */
-export function canTransition(role: Role, to: WorkOrderStatus): boolean {
-  if (!can(role, "workorders.changeStatus")) return false;
-  if (role === "technician") return to === "in_progress" || to === "completed";
-  if (to === "invoiced") return can(role, "workorders.invoice");
+export function canTransition(
+  role: Role,
+  to: WorkOrderStatus,
+  extraRoles: readonly Role[] = [],
+): boolean {
+  if (!can(role, "workorders.changeStatus", extraRoles)) return false;
+  // Narrow (own-job-only) movement applies only if every role in play that
+  // grants workorders.changeStatus at all is the technician role itself —
+  // being also ticked for service advisor or shop admin lifts the limit.
+  const grantors = [role, ...extraRoles].filter((r) => MATRIX[r].has("workorders.changeStatus"));
+  if (grantors.every((r) => r === "technician")) {
+    return to === "in_progress" || to === "completed";
+  }
+  if (to === "invoiced") return can(role, "workorders.invoice", extraRoles);
   return true;
 }
 
@@ -108,12 +126,16 @@ const DEPARTMENTS: Record<Role, readonly Department[]> = {
   parts_advisor: ["parts"],
 };
 
-export function departmentsFor(role: Role): readonly Department[] {
-  return DEPARTMENTS[role];
+export function departmentsFor(role: Role, extraRoles: readonly Role[] = []): Department[] {
+  return Array.from(new Set([role, ...extraRoles].flatMap((r) => DEPARTMENTS[r])));
 }
 
-export function canAccessDepartment(role: Role, dept: Department): boolean {
-  return DEPARTMENTS[role].includes(dept);
+export function canAccessDepartment(
+  role: Role,
+  dept: Department,
+  extraRoles: readonly Role[] = [],
+): boolean {
+  return DEPARTMENTS[role].includes(dept) || extraRoles.some((r) => DEPARTMENTS[r].includes(dept));
 }
 
 /** Where a user lands after login. */
@@ -127,3 +149,21 @@ export const ROLE_LABELS: Record<Role, string> = {
   technician: "Technician",
   parts_advisor: "Parts advisor",
 };
+
+/** Display order for the role picker, and the precedence used by splitRoles. */
+export const ALL_ROLES: Role[] = ["shop_admin", "service_advisor", "parts_advisor", "technician"];
+
+/**
+ * The database stores one "primary" role per login (for things like the
+ * technician billing flag and the Role column) plus a set of extra roles on
+ * top. The role picker just shows a flat set of ticked boxes, so this picks
+ * which ticked role is primary — by precedence, admin first — and returns the
+ * rest as extras. Purely a storage/display detail: `can()` treats the primary
+ * role and every extra role identically.
+ */
+export function splitRoles(roles: readonly Role[]): { role: Role; extraRoles: Role[] } {
+  const set = new Set(roles);
+  const role = ALL_ROLES.find((r) => set.has(r)) ?? "service_advisor";
+  set.delete(role);
+  return { role, extraRoles: Array.from(set) };
+}

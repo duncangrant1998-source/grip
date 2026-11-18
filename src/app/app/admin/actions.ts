@@ -7,6 +7,7 @@ import { inShop } from "@/lib/auth";
 import { runAction, redirect, type ActionState } from "@/lib/action";
 import { addDays, isDateString } from "@/lib/dates";
 import { emailPlatformAdmin } from "@/lib/notify";
+import { splitRoles } from "@/lib/permissions";
 
 const uuid = z.string().uuid();
 const optUuid = z.preprocess((v) => (v === "" || v == null ? undefined : v), uuid.optional());
@@ -22,6 +23,11 @@ function bad(p: { success: false; error: z.ZodError }): ActionState {
 
 const password = z.string().min(8, "A password needs at least 8 characters.").max(200);
 const loginRole = z.enum(["service_advisor", "technician", "parts_advisor", "shop_admin"]);
+/** Reads the set of checked `roles` checkboxes (the Staff tab's role picker) as a deduplicated array. */
+const rolesList = (form: FormData) => {
+  const parsed = z.array(loginRole).safeParse(form.getAll("roles"));
+  return parsed.success ? Array.from(new Set(parsed.data)) : [];
+};
 
 // --- staff --------------------------------------------------------------------------
 
@@ -153,15 +159,26 @@ export async function addLogin(_prev: ActionState, form: FormData): Promise<Acti
   return result.error === "That already exists." ? { error: "That login is already linked, or the email is taken." } : result;
 }
 
+/**
+ * Sets which roles a login has (one or more, from the Staff tab's role
+ * picker) and whether it can sign in at all. Used both by the compact
+ * dropdown on the staff list and the fuller form on a staff member's own
+ * page — each carries the field it isn't changing as a hidden input, so
+ * ticking roles in the list dropdown can't accidentally flip "can sign in".
+ */
 export async function updateAccess(_prev: ActionState, form: FormData): Promise<ActionState> {
-  const parsed = z.object({ employee_id: uuid, user_id: uuid, role: loginRole, is_active: checked })
+  const parsed = z.object({ employee_id: uuid, user_id: uuid, is_active: checked })
     .safeParse(Object.fromEntries(form));
   if (!parsed.success) return bad(parsed);
   const a = parsed.data;
+  const roles = rolesList(form);
+  if (roles.length === 0) return { error: "Choose at least one role." };
+  const { role, extraRoles } = splitRoles(roles);
 
   return runAction("staff.manage", async (session) => {
     const [notification] = await inShop(session, (tx) => tx<{ notify_title: string | null; notify_body: string | null }[]>`
-      SELECT * FROM grip.update_user_access(${a.user_id}, ${a.role}::grip.user_role, ${a.is_active})`);
+      SELECT * FROM grip.update_user_access(
+        ${a.user_id}, ${role}::grip.user_role, ${a.is_active}, ${extraRoles}::grip.user_role[])`);
     revalidatePath(`/app/admin/staff/${a.employee_id}`);
     revalidatePath("/app/admin/staff");
     if (notification?.notify_title && notification.notify_body) {

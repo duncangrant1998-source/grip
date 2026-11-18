@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { can, canAccessDepartment, departmentsFor } from "../src/lib/permissions";
+import { can, canAccessDepartment, departmentsFor, splitRoles } from "../src/lib/permissions";
 
 describe("the shared work order: both desks can add to it", () => {
   test("service advisor adds labour and parts", () => {
@@ -93,5 +93,56 @@ describe("service shortcuts", () => {
     expect(can("service_advisor", "shortcuts.manage")).toBe(true);
     expect(can("parts_advisor", "shortcuts.manage")).toBe(true);
     expect(can("technician", "shortcuts.manage")).toBe(false);
+  });
+});
+
+describe("admin-granted extra roles", () => {
+  test("a technician also ticked for parts advisor can sell counter parts, but keeps technician's own-job limits", () => {
+    expect(can("technician", "counterSales.create")).toBe(false);
+    expect(can("technician", "counterSales.create", ["parts_advisor"])).toBe(true);
+    // Granting parts advisor doesn't change what they can do with work order status.
+    expect(can("technician", "workorders.invoice", ["parts_advisor"])).toBe(false);
+  });
+
+  test("a service advisor also ticked for parts advisor can see part cost", () => {
+    expect(can("service_advisor", "parts.viewCost")).toBe(false);
+    expect(can("service_advisor", "parts.viewCost", ["parts_advisor"])).toBe(true);
+  });
+
+  test("a grant never takes anything away — it only adds", () => {
+    expect(can("parts_advisor", "counterSales.create", ["service_advisor"])).toBe(true);
+    expect(can("parts_advisor", "workorders.addPart", ["service_advisor"])).toBe(true);
+  });
+
+  test("canAccessDepartment and departmentsFor see the grant", () => {
+    expect(canAccessDepartment("technician", "parts", ["parts_advisor"])).toBe(true);
+    expect(canAccessDepartment("technician", "parts")).toBe(false);
+    expect(departmentsFor("technician", ["parts_advisor"])).toEqual(["service", "parts"]);
+  });
+
+  test("being also ticked for service advisor lets a technician move a work order fully, not just their own jobs", async () => {
+    const { canTransition } = await import("../src/lib/permissions");
+    expect(canTransition("technician", "invoiced")).toBe(false);
+    expect(canTransition("technician", "invoiced", ["service_advisor"])).toBe(true);
+    expect(canTransition("technician", "cancelled", ["service_advisor"])).toBe(true);
+  });
+
+  test("being also ticked for shop admin lifts the technician's own-job limit too", async () => {
+    const { canTransition } = await import("../src/lib/permissions");
+    expect(canTransition("technician", "paid", ["shop_admin"])).toBe(true);
+  });
+
+  test("an empty or missing grant behaves exactly like no grant at all", () => {
+    expect(can("technician", "counterSales.create", [])).toBe(false);
+    expect(canAccessDepartment("technician", "parts", [])).toBe(false);
+  });
+});
+
+describe("splitRoles", () => {
+  test("picks the highest-precedence ticked role as primary, the rest as extras", () => {
+    expect(splitRoles(["technician", "parts_advisor"])).toEqual({ role: "parts_advisor", extraRoles: ["technician"] });
+    expect(splitRoles(["technician", "shop_admin", "service_advisor"]))
+      .toEqual({ role: "shop_admin", extraRoles: expect.arrayContaining(["service_advisor", "technician"]) });
+    expect(splitRoles(["technician"])).toEqual({ role: "technician", extraRoles: [] });
   });
 });

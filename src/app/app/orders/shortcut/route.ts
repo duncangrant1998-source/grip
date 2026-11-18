@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   const session = await requireSession();
-  if (!can(session.role, "workorders.addLabour")) {
+  if (!can(session.role, "workorders.addLabour", session.extraRoles)) {
     return Response.json({ found: false }, { status: 403 });
   }
 

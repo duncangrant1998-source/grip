@@ -21,7 +21,7 @@ export default async function CustomerPage({
   searchParams: Promise<{ vehicle?: string; panel?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "customers.view")) redirect("/app?denied=customers");
+  if (!can(session.role, "customers.view", session.extraRoles)) redirect("/app?denied=customers");
 
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -34,8 +34,8 @@ export default async function CustomerPage({
   if (!data) notFound();
 
   const { customer, vehicles } = data;
-  const canEdit = can(session.role, "customers.edit");
-  const canCreate = can(session.role, "workorders.create");
+  const canEdit = can(session.role, "customers.edit", session.extraRoles);
+  const canCreate = can(session.role, "workorders.create", session.extraRoles);
 
   // Keep whichever vehicle is open while a panel is toggled, and vice versa.
   const href = (next: { vehicle?: string | null; panel?: string | null }) => {

@@ -97,14 +97,28 @@ describe("a shop always keeps an administrator", () => {
   const access = (userId: string, role: string, active: boolean, as_ = "shop_admin", s: Shop = shop) =>
     as(as_, (tx) => tx`SELECT grip.update_user_access(${userId}, ${role}::grip.user_role, ${active})`, s);
 
-  test("cannot demote or deactivate the only administrator", async () => {
-    await expect(access(shop.users.shop_admin, "service_advisor", true)).rejects.toThrow(/at least one active administrator/i);
-    await expect(access(shop.users.shop_admin, "shop_admin", false)).rejects.toThrow(/at least one active administrator/i);
+  // createShop's shop_admin is the shop's very first admin, so it is
+  // automatically the protected owner (see "the shop owner" below) — it can
+  // never be demoted or deactivated, with or without other admins around.
+  // Because of that, this shop always has at least one active administrator
+  // (the owner) regardless of what happens to anyone else, so the classic
+  // "don't orphan the shop" guard is exercised on the *owner* here — a
+  // non-owner admin never gets a chance to be the last one while the owner
+  // exists.
+  test("the owner cannot be demoted or deactivated — alone, or with other admins active", async () => {
+    await expect(access(shop.users.shop_admin, "service_advisor", true)).rejects.toThrow(/shop owner/i);
+    await expect(access(shop.users.shop_admin, "shop_admin", false)).rejects.toThrow(/shop owner/i);
   });
 
-  test("can once there is another", async () => {
-    await access(shop.users.service_advisor, "shop_admin", true);
-    await expect(access(shop.users.shop_admin, "service_advisor", true)).resolves.toBeDefined();
+  test("still true once there is a second admin", async () => {
+    await access(shop.users.service_advisor, "shop_admin", true); // now two admins
+    await expect(access(shop.users.shop_admin, "service_advisor", true)).rejects.toThrow(/shop owner/i);
+    await expect(access(shop.users.shop_admin, "shop_admin", false)).rejects.toThrow(/shop owner/i);
+  });
+
+  test("a non-owner admin can be demoted once there is another active administrator", async () => {
+    await access(shop.users.service_advisor, "shop_admin", true); // owner + service_advisor are both admins
+    await expect(access(shop.users.service_advisor, "service_advisor", true)).resolves.toBeDefined();
   });
 
   test("two admins demoting each other at the same instant: exactly one succeeds", async () => {

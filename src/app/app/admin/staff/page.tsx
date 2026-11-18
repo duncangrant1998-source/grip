@@ -6,6 +6,7 @@ import { ROLE_LABELS } from "@/lib/permissions";
 import { dateTime, money } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { RolesMenu } from "@/components/RolesMenu";
 import { btn, card, input, label } from "@/components/ui";
 import { createStaff, removeStaff } from "../actions";
 
@@ -38,7 +39,7 @@ export default async function StaffPage({
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-steel">
             <tr>
               <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Roles</th>
               <th className="px-4 py-3">Sign-in</th>
               <th className="px-3 py-3 text-right">Pay / hr</th>
               <th className="px-4 py-3">Status</th>
@@ -53,7 +54,18 @@ export default async function StaffPage({
                   <div className="text-xs text-steel">{s.job_title}</div>
                 </td>
                 <td className="px-4 py-3 text-steel">
-                  {s.role ? ROLE_LABELS[s.role] : "—"}
+                  {s.user_id && s.role ? (
+                    <RolesMenu
+                      employeeId={s.id}
+                      userId={s.user_id}
+                      role={s.role}
+                      extraRoles={s.extra_roles}
+                      isActive={s.login_active ?? true}
+                      isShopOwner={s.is_shop_owner}
+                    />
+                  ) : (
+                    "—"
+                  )}
                   {s.is_technician && <span className="ml-2 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] text-violet-700">technician</span>}
                 </td>
                 <td className="px-4 py-3 text-steel">
@@ -73,7 +85,7 @@ export default async function StaffPage({
                     : <span className="text-steel">off</span>}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {s.user_id !== session.userId && (
+                  {s.user_id !== session.userId && !s.is_shop_owner && (
                     <ActionForm action={removeStaff} className="inline-block">
                       <input type="hidden" name="id" value={s.id} />
                       <ConfirmButton

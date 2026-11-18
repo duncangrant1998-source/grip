@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const session = await requireSession();
-  if (!can(session.role, "customers.view")) {
+  if (!can(session.role, "customers.view", session.extraRoles)) {
     return new Response("Not allowed", { status: 403 });
   }
 

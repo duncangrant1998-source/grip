@@ -22,7 +22,7 @@ export default async function ShortcutPage({
   searchParams: Promise<{ partq?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "shortcuts.manage")) redirect("/app?denied=shortcuts");
+  if (!can(session.role, "shortcuts.manage", session.extraRoles)) redirect("/app?denied=shortcuts");
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { partq = "" } = await searchParams;
@@ -34,7 +34,7 @@ export default async function ShortcutPage({
 
   return (
     <div className="space-y-5">
-      <ServiceNav role={session.role} active="shortcuts" />
+      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />
       <div>
         <Link href="/app/shortcuts" className="text-sm text-steel hover:text-ink">← Shortcuts</Link>
         <h1 className="mt-1 text-2xl font-bold">

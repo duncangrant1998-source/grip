@@ -35,10 +35,10 @@ export default async function AppointmentPage({ params }: { params: Promise<{ id
   if (!data) notFound();
   const { appt, audit } = data;
 
-  const canEdit = can(session.role, "appointments.edit");
+  const canEdit = can(session.role, "appointments.edit", session.extraRoles);
   const live = ["scheduled", "confirmed", "arrived"].includes(appt.status);
   const mayChange = canEdit && live;
-  const mayConvert = can(session.role, "workorders.create") && !appt.work_order_id &&
+  const mayConvert = can(session.role, "workorders.create", session.extraRoles) && !appt.work_order_id &&
     ["scheduled", "confirmed", "arrived", "in_progress"].includes(appt.status);
 
   const [bays, techs] = mayChange

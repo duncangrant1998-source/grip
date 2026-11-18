@@ -40,8 +40,8 @@ export default async function PartPage({ params }: { params: Promise<{ id: strin
   if (!data) notFound();
   const { part, movements, holds, onOrder } = data;
 
-  const canEdit = can(session.role, "inventory.edit");
-  const showCost = can(session.role, "parts.viewCost");
+  const canEdit = can(session.role, "inventory.edit", session.extraRoles);
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
   const [suppliers, cats] = canEdit
     ? await Promise.all([activeSuppliers(session), categoryCounts(session)])
     : [[], []];

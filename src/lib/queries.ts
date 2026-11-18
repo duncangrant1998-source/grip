@@ -118,7 +118,7 @@ export type AuditEntry = {
 export async function getOrder(session: Session, id: string) {
   // Part cost is visible only to roles allowed to see it. It is simply never
   // selected otherwise, so it cannot leak through a rendering mistake.
-  const showCost = can(session.role, "parts.viewCost");
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
 
   return inShop(session, async (tx) => {
     const [order] = await tx<OrderDetail[]>`
@@ -213,7 +213,7 @@ export type PartHit = {
 export function searchParts(
   session: Session, q: string, vehicle?: { make: string | null; model: string | null } | null,
 ) {
-  const showCost = can(session.role, "parts.viewCost");
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
   const like = "%" + q + "%";
   const fit = "%" + (vehicle?.model ?? vehicle?.make ?? "") + "%";
   return inShop(session, (tx) => tx<PartHit[]>`

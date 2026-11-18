@@ -21,7 +21,7 @@ export async function runAction(
 ): Promise<ActionState> {
   const session = await requireSession();
 
-  if (permission && !can(session.role, permission)) {
+  if (permission && !can(session.role, permission, session.extraRoles)) {
     return { error: "You don't have permission to do that." };
   }
 

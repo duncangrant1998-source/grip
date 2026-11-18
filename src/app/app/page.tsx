@@ -18,9 +18,9 @@ export default async function Dashboard({
   // Each tile is gated by the same can() the rest of the app uses, so the
   // dashboard never advertises something the user would be refused.
   // "Today" is the shop's day, not the server's.
-  const todayAppts = can(session.role, "appointments.view") ? await countToday(session) : 0;
+  const todayAppts = can(session.role, "appointments.view", session.extraRoles) ? await countToday(session) : 0;
   // Time off is addressed to a person, so anyone can have a request waiting on them.
-  const timeOffWaiting = await pendingTimeOffCount(session, can(session.role, "staff.manage"));
+  const timeOffWaiting = await pendingTimeOffCount(session, can(session.role, "staff.manage", session.extraRoles));
 
   const stats = await inShop(session, async (tx) => {
     // Technicians count only their own jobs and appointments.
@@ -46,24 +46,24 @@ export default async function Dashboard({
   });
 
   const tiles = [
-    can(session.role, "workorders.view") && {
+    can(session.role, "workorders.view", session.extraRoles) && {
       label: "Open work orders", value: stats.openOrders, href: "/app/orders",
     },
-    can(session.role, "appointments.view") && {
+    can(session.role, "appointments.view", session.extraRoles) && {
       label: "Appointments today", value: todayAppts, href: "/app/schedule",
     },
-    can(session.role, "inventory.view") && {
+    can(session.role, "inventory.view", session.extraRoles) && {
       label: "Parts at or below reorder point", value: stats.lowStock, href: "/app/parts?view=low",
     },
-    can(session.role, "purchaseOrders.manage") && {
+    can(session.role, "purchaseOrders.manage", session.extraRoles) && {
       label: "Purchase orders awaiting delivery", value: stats.openPOs, href: "/app/parts/orders",
     },
-    can(session.role, "staff.manage") && {
+    can(session.role, "staff.manage", session.extraRoles) && {
       label: "Active staff", value: stats.staff, href: "/app/admin",
     },
     timeOffWaiting > 0 && {
       label: "Time-off requests waiting for you", value: timeOffWaiting,
-      href: can(session.role, "staff.manage") ? "/app/admin/timeoff" : "/app/time?tab=timeoff",
+      href: can(session.role, "staff.manage", session.extraRoles) ? "/app/admin/timeoff" : "/app/time?tab=timeoff",
     },
   ].filter(Boolean) as { label: string; value: number; href: string }[];
 

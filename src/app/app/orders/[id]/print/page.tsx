@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireSession();
-  if (!can(session.role, "workorders.view")) redirect("/app?denied=orders");
+  if (!can(session.role, "workorders.view", session.extraRoles)) redirect("/app?denied=orders");
 
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();

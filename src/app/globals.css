@@ -9,3 +9,12 @@
 body {
   @apply bg-slate-50 text-ink antialiased;
 }
+
+/* A <summary> used as a dropdown trigger (role pickers, etc.) shouldn't show
+   the browser's built-in disclosure triangle — we draw our own affordance. */
+summary.no-marker {
+  list-style: none;
+}
+summary.no-marker::-webkit-details-marker {
+  display: none;
+}

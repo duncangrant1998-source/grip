@@ -26,7 +26,7 @@ export default async function PurchaseOrdersPage({
   const session = await requireDepartment("parts");
   const sp = await searchParams;
   const scope = (TABS.find((t) => t.key === sp.scope)?.key ?? "open") as "open" | "closed" | "all";
-  const canManage = can(session.role, "purchaseOrders.manage");
+  const canManage = can(session.role, "purchaseOrders.manage", session.extraRoles);
 
   const [orders, suppliers, taxRates] = await Promise.all([
     listPurchaseOrders(session, scope),

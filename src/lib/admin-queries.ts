@@ -12,7 +12,7 @@ export type StaffRow = {
   id: string; full_name: string; job_title: string | null; hourly_rate: string;
   employment_type: string; is_active: boolean; is_technician: boolean;
   user_id: string | null; email: string | null; role: Role | null; login_active: boolean | null;
-  on_clock: boolean;
+  on_clock: boolean; extra_roles: Role[]; is_shop_owner: boolean;
 };
 
 /** Current staff. People who have been removed are kept on file but are not staff any more. */
@@ -20,6 +20,7 @@ export function listStaff(session: Session) {
   return inShop(session, (tx) => tx<StaffRow[]>`
     SELECT e.id, e.full_name, e.job_title, e.hourly_rate, e.employment_type, e.is_active,
            e.is_technician, e.user_id, u.email, u.role, u.is_active AS login_active,
+           coalesce(u.extra_roles, '{}') AS extra_roles, coalesce(u.is_shop_owner, false) AS is_shop_owner,
            EXISTS (SELECT 1 FROM grip.time_entries t
                    WHERE t.employee_id = e.id AND t.clock_out IS NULL) AS on_clock
     FROM grip.employees e LEFT JOIN grip.users u ON u.id = e.user_id
@@ -59,6 +60,7 @@ export async function getStaff(session: Session, id: string) {
     SELECT e.id, e.full_name, e.job_title, e.hourly_rate, e.billable_rate, e.employment_type,
            e.is_active, e.is_technician, e.user_id, u.email, u.role,
            u.is_active AS login_active, u.last_login_at, false AS on_clock,
+           coalesce(u.extra_roles, '{}') AS extra_roles, coalesce(u.is_shop_owner, false) AS is_shop_owner,
            e.created_at, e.removed_at, rb.full_name AS removed_by_name, e.removal_note,
            e.phone, e.personal_email, e.address
     FROM grip.employees e

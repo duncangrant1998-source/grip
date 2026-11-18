@@ -347,6 +347,32 @@ Notes:
   checks are app-layer; tenant isolation is database-layer. The brief's
   non-negotiable is the second one.
 
+**The role picker.** The table above is the default for *one* role, not a
+ceiling on how many a login can have. Small shops often want to bend it — a
+technician who also covers the parts counter, a service advisor who can see
+parts info — so the Staff tab's role picker (the "Roles" dropdown beside each
+name, and the same control on a staff member's own page) lets an admin tick
+any combination of the four roles for a login, not just one. Ticking a role
+adds everything that role's row of the table above grants; unticking one
+removes only what that role alone granted — something another ticked role
+still grants stays granted. It never creates a new named role: one ticked role
+is stored as the login's primary `role` (what the technician-billing flag and
+the Role label default from) and the rest as `grip.users.extra_roles`; `can()`
+/ `canAccessDepartment()` / `canTransition()` (`src/lib/permissions.ts`) treat
+every ticked role identically regardless of which one is "primary." Changes
+take effect immediately, since the full set is resolved fresh from the
+session on every request.
+
+**The shop owner.** Every tenant has exactly one `is_shop_owner` login —
+automatically the first `shop_admin` it ever gets — whose access can never be
+changed from the Staff tab, by anyone, including itself: no role picker, no
+deactivating, no removing from staff. `grip.update_user_access` and
+`grip.remove_employee` both refuse outright if the target is the owner. This
+is the shop's one access invariant that cannot be reasoned around by a
+confused or malicious admin — every other `shop_admin` can be demoted,
+deactivated or removed (subject to "a shop must always keep at least one
+active administrator"), but the owner is permanent by construction.
+
 ---
 
 ## 6. MVP scope

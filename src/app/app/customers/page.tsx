@@ -19,7 +19,7 @@ export default async function CustomersPage({
   searchParams: Promise<{ q?: string; next?: string; panel?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "customers.view")) redirect("/app?denied=customers");
+  if (!can(session.role, "customers.view", session.extraRoles)) redirect("/app?denied=customers");
 
   const { q = "", next, panel: panelParam } = await searchParams;
   // Arriving from "new work order" with a walk-in: after saving, go back to it,
@@ -30,7 +30,7 @@ export default async function CustomersPage({
     listCustomers(session, q.trim()),
     listTaxRates(session),
   ]);
-  const canEdit = can(session.role, "customers.edit");
+  const canEdit = can(session.role, "customers.edit", session.extraRoles);
 
   // Toggle a panel from its own button, keeping the search and the walk-in
   // return-to-order flag.

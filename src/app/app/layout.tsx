@@ -21,20 +21,20 @@ export default async function PortalLayout({ children }: { children: React.React
     (tx) => tx<{ name: string }[]>`SELECT name FROM grip.tenants WHERE id = ${session.tenantId}`,
   );
 
-  const departments = departmentsFor(session.role);
+  const departments = departmentsFor(session.role, session.extraRoles);
   const unreadCount = session.isPlatformAdmin ? await unreadNotificationCount(session) : 0;
 
   const links: AppNavLink[] = [{ href: "/app", label: "Dashboard" }];
-  if (can(session.role, "workorders.view") && !departments.includes("service")) {
+  if (can(session.role, "workorders.view", session.extraRoles) && !departments.includes("service")) {
     links.push({ href: "/app/orders", label: "Work orders" });
   }
-  if (can(session.role, "customers.view")) links.push({ href: "/app/customers", label: "Customers" });
+  if (can(session.role, "customers.view", session.extraRoles)) links.push({ href: "/app/customers", label: "Customers" });
   for (const d of departments) links.push({ href: NAV[d].href, label: NAV[d].label });
-  if (can(session.role, "settings.manage")) links.push({ href: "/app/shop", label: "My Shop" });
-  if (can(session.role, "reports.margin") || can(session.role, "reports.partsOnly")) {
-    links.push({ href: "/app/reports", label: can(session.role, "reports.margin") ? "Reports" : "Parts sales" });
+  if (can(session.role, "settings.manage", session.extraRoles)) links.push({ href: "/app/shop", label: "My Shop" });
+  if (can(session.role, "reports.margin", session.extraRoles) || can(session.role, "reports.partsOnly", session.extraRoles)) {
+    links.push({ href: "/app/reports", label: can(session.role, "reports.margin", session.extraRoles) ? "Reports" : "Parts sales" });
   }
-  if (can(session.role, "timeclock.own")) links.push({ href: "/app/time", label: "Time clock" });
+  if (can(session.role, "timeclock.own", session.extraRoles)) links.push({ href: "/app/time", label: "Time clock" });
   if (session.isPlatformAdmin) links.push({ href: "/platform", label: "Platform", badge: unreadCount });
 
   return (

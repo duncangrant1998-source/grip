@@ -196,8 +196,8 @@ export async function applyShortcut(_prev: ActionState, form: FormData): Promise
   const s = parsed.data;
 
   return runAction(null, async (session) => {
-    const labour = can(session.role, "workorders.addLabour");
-    const parts = can(session.role, "workorders.addPart");
+    const labour = can(session.role, "workorders.addLabour", session.extraRoles);
+    const parts = can(session.role, "workorders.addPart", session.extraRoles);
     if (!labour && !parts) {
       throw Object.assign(new Error("You can't add lines to a work order."), { code: "P0001" });
     }
@@ -226,7 +226,7 @@ export async function addShortcutParts(_prev: ActionState, form: FormData): Prom
   const s = parsed.data;
 
   return runAction(null, async (session) => {
-    if (!can(session.role, "workorders.addPart")) return;
+    if (!can(session.role, "workorders.addPart", session.extraRoles)) return;
     if (!(await canSeeOrder(session, s.work_order_id))) {
       throw Object.assign(new Error("Work order not found."), { code: "P0001" });
     }
@@ -276,7 +276,7 @@ export async function transition(_prev: ActionState, form: FormData): Promise<Ac
   const t = parsed.data;
 
   return runAction("workorders.changeStatus", async (session) => {
-    if (!canTransition(session.role, t.to as WorkOrderStatus)) {
+    if (!canTransition(session.role, t.to as WorkOrderStatus, session.extraRoles)) {
       throw Object.assign(new Error("Your role can't move a work order to that status."), { code: "P0001" });
     }
     if (!(await canSeeOrder(session, t.work_order_id))) {

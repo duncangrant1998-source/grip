@@ -42,7 +42,7 @@ export default async function WorkOrderPage({
   searchParams: Promise<{ partq?: string; panel?: string; cq?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "workorders.view")) redirect("/app?denied=orders");
+  if (!can(session.role, "workorders.view", session.extraRoles)) redirect("/app?denied=orders");
 
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
@@ -55,15 +55,15 @@ export default async function WorkOrderPage({
   const editable = isEditable(order.status);
   // Parts stop being editable once the job is completed (completing uses them up);
   // labour stays open until the order is invoiced, because hours get corrected then.
-  const mayLabour = isLabourEditable(order.status) && can(session.role, "workorders.addLabour");
+  const mayLabour = isLabourEditable(order.status) && can(session.role, "workorders.addLabour", session.extraRoles);
   // Notes are text for the customer: always open to whoever may edit labour.
-  const mayNotes = order.status !== "cancelled" && can(session.role, "workorders.addLabour");
-  const mayDetails = isDetailsEditable(order.status) && can(session.role, "workorders.addLabour");
-  const mayChangeCustomer = isDetailsEditable(order.status) && can(session.role, "workorders.create");
-  const mayPart = editable && can(session.role, "workorders.addPart");
-  const mayOptions = can(session.role, "workorders.invoice") &&
+  const mayNotes = order.status !== "cancelled" && can(session.role, "workorders.addLabour", session.extraRoles);
+  const mayDetails = isDetailsEditable(order.status) && can(session.role, "workorders.addLabour", session.extraRoles);
+  const mayChangeCustomer = isDetailsEditable(order.status) && can(session.role, "workorders.create", session.extraRoles);
+  const mayPart = editable && can(session.role, "workorders.addPart", session.extraRoles);
+  const mayOptions = can(session.role, "workorders.invoice", session.extraRoles) &&
     !["invoiced", "paid", "cancelled"].includes(order.status);
-  const showCost = can(session.role, "parts.viewCost");
+  const showCost = can(session.role, "parts.viewCost", session.extraRoles);
   const isTech = session.role === "technician";
   const flat = order.labour_billing_mode === "flat_rate";
   const jobTime = await orderJobTime(session, order.id);
@@ -83,9 +83,9 @@ export default async function WorkOrderPage({
       : { label: "Added by" as const, name: l.added_by, at: dateTime(l.created_at) };
 
   const next = NEXT_STEP[order.status];
-  const mayAdvance = next && canTransition(session.role, next.to);
+  const mayAdvance = next && canTransition(session.role, next.to, session.extraRoles);
   const mayCancel = ["quote", "approved", "in_progress"].includes(order.status) &&
-    canTransition(session.role, "cancelled");
+    canTransition(session.role, "cancelled", session.extraRoles);
   const hasBackorder = parts.some((p) => p.qty_backordered > 0);
 
   return (
@@ -102,7 +102,7 @@ export default async function WorkOrderPage({
           </div>
           <div className="mt-2 flex flex-wrap items-start gap-x-6 gap-y-1 text-sm">
             <div>
-              {can(session.role, "customers.view") ? (
+              {can(session.role, "customers.view", session.extraRoles) ? (
                 <Link href={`/app/customers/${order.customer_id}`} className="text-base font-semibold hover:underline">
                   {order.customer_name}
                 </Link>

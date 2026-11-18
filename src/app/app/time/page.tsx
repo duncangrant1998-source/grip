@@ -34,7 +34,7 @@ export default async function TimeClockPage({
   searchParams: Promise<{ tab?: string; month?: string; from?: string; to?: string }>;
 }) {
   const session = await requireSession();
-  if (!can(session.role, "timeclock.own")) redirect("/app?denied=the time clock");
+  if (!can(session.role, "timeclock.own", session.extraRoles)) redirect("/app?denied=the time clock");
 
   const sp = await searchParams;
   const tab = (TABS.find((t) => t.key === sp.tab)?.key ?? "clock") as Tab;
@@ -53,7 +53,7 @@ export default async function TimeClockPage({
   }
 
   const ctx = await getScheduleContext(session);
-  const isAdmin = can(session.role, "staff.manage");
+  const isAdmin = can(session.role, "staff.manage", session.extraRoles);
   const toAnswer = await listTimeOffToAnswer(session, isAdmin);
 
   return (

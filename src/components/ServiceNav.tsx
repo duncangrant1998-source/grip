@@ -4,17 +4,25 @@ import { can, type Role } from "@/lib/permissions";
 export type ServiceTab = "schedule" | "quotes" | "open" | "closed" | "shortcuts";
 
 /** The service department's tabs. Server component: the active tab is passed in. */
-export function ServiceNav({ role, active }: { role: Role; active: ServiceTab }) {
+export function ServiceNav({
+  role,
+  extraRoles = [],
+  active,
+}: {
+  role: Role;
+  extraRoles?: readonly Role[];
+  active: ServiceTab;
+}) {
   const tabs: { key: ServiceTab; href: string; label: string }[] = [];
-  if (can(role, "appointments.view")) tabs.push({ key: "schedule", href: "/app/schedule", label: "Schedule" });
-  if (can(role, "workorders.view")) {
+  if (can(role, "appointments.view", extraRoles)) tabs.push({ key: "schedule", href: "/app/schedule", label: "Schedule" });
+  if (can(role, "workorders.view", extraRoles)) {
     tabs.push(
       { key: "quotes", href: "/app/orders?scope=quotes", label: "Quotes" },
       { key: "open", href: "/app/orders?scope=open", label: "Open orders" },
       { key: "closed", href: "/app/orders?scope=closed", label: "Closed orders" },
     );
   }
-  if (can(role, "shortcuts.manage")) tabs.push({ key: "shortcuts", href: "/app/shortcuts", label: "Shortcuts" });
+  if (can(role, "shortcuts.manage", extraRoles)) tabs.push({ key: "shortcuts", href: "/app/shortcuts", label: "Shortcuts" });
 
   return (
     <nav className="mb-6 flex flex-wrap gap-1 border-b border-slate-200 text-sm print:hidden">

@@ -32,7 +32,7 @@ export default async function PurchaseOrderPage({
   if (!data) notFound();
   const { po, lines, audit } = data;
 
-  const canManage = can(session.role, "purchaseOrders.manage");
+  const canManage = can(session.role, "purchaseOrders.manage", session.extraRoles);
   const isDraft = po.status === "draft";
   const mayEdit = canManage && isDraft;
   const mayReceive = canManage && ["ordered", "partial"].includes(po.status);
