@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/auth";
 import { getSettings } from "@/lib/admin-queries";
 import { ActionForm } from "@/components/ActionForm";
 import { TemplatePicker } from "./TemplatePicker";
+import { LogoUpload } from "./LogoUpload";
 import { btn, card, input, label } from "@/components/ui";
 import { saveDocuments, saveShopDetails } from "./actions";
 
@@ -73,16 +74,11 @@ export default async function ShopDetailsPage() {
       <section className={`${card} p-5`}>
         <h2 className="mb-1 font-semibold">Quotes and invoices</h2>
         <p className="mb-4 text-xs text-steel">How your documents look to customers.</p>
+        <div className="mb-3">
+          <label className={label}>Logo</label>
+          <LogoUpload logoUrl={s.logo_url} />
+        </div>
         <ActionForm action={saveDocuments} className="space-y-3" keepAfterSuccess>
-          <div>
-            <label className={label} htmlFor="logo">Logo link</label>
-            <input id="logo" name="logo_url" type="url" defaultValue={s.logo_url ?? ""} placeholder="https://…/logo.png" className={`${input} w-full`} />
-            <p className="mt-1 text-xs text-steel">A link to an image already hosted online. Uploading a file directly is planned.</p>
-          </div>
-          {s.logo_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={s.logo_url} alt="Logo preview" className="h-12 rounded border border-slate-200 bg-white p-1" />
-          )}
           <div>
             <label className={label} htmlFor="footer">Footer</label>
             <textarea id="footer" name="invoice_footer" rows={3} defaultValue={s.invoice_footer ?? ""}

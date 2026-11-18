@@ -54,8 +54,6 @@ export async function saveShopDetails(_prev: ActionState, form: FormData): Promi
 
 export async function saveDocuments(_prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = z.object({
-    logo_url: z.string().trim().max(500).optional().transform((v) => v || null)
-      .refine((v) => v === null || /^https:\/\/\S+$/.test(v), "The logo must be an https:// link."),
     invoice_footer: optText(500),
     invoice_template: z.enum(["classic", "modern", "minimal"]).default("classic"),
     invoice_logo_position: z.enum(["left", "center", "right"]).default("left"),
@@ -66,14 +64,53 @@ export async function saveDocuments(_prev: ActionState, form: FormData): Promise
   return runAction("settings.manage", async (session) => {
     await inShop(session, (tx) => tx`
       INSERT INTO grip.tenant_settings
-        (tenant_id, logo_url, invoice_footer, invoice_template, invoice_logo_position)
-      VALUES (${session.tenantId}, ${s.logo_url}, ${s.invoice_footer},
+        (tenant_id, invoice_footer, invoice_template, invoice_logo_position)
+      VALUES (${session.tenantId}, ${s.invoice_footer},
               ${s.invoice_template}::grip.invoice_template,
               ${s.invoice_logo_position}::grip.invoice_logo_position)
       ON CONFLICT (tenant_id) DO UPDATE SET
-        logo_url = EXCLUDED.logo_url, invoice_footer = EXCLUDED.invoice_footer,
+        invoice_footer = EXCLUDED.invoice_footer,
         invoice_template = EXCLUDED.invoice_template,
         invoice_logo_position = EXCLUDED.invoice_logo_position, updated_at = now()`);
+    refresh();
+    revalidatePath("/app/orders");
+  });
+}
+
+// --- logo -----------------------------------------------------------------------------
+
+const MAX_LOGO_BYTES = 1_000_000; // 1 MB raw — plenty for a shop logo, keeps the row small
+const LOGO_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/svg+xml"]);
+
+/**
+ * Stores the logo itself (as a data: URL) rather than a link to one hosted
+ * elsewhere — a shop shouldn't need its own image host just to put a logo on
+ * a quote. A 1 MB cap keeps tenant_settings rows small; shop logos don't
+ * need to be bigger than that for a print header a few centimetres wide.
+ */
+export async function uploadLogo(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const file = form.get("logo_file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose an image file." };
+  if (!LOGO_MIME_TYPES.has(file.type)) return { error: "Logo must be a PNG, JPEG, WebP or SVG image." };
+  if (file.size > MAX_LOGO_BYTES) return { error: "That image is too large — keep it under 1 MB." };
+
+  const buf = Buffer.from(await file.arrayBuffer());
+  const dataUrl = `data:${file.type};base64,${buf.toString("base64")}`;
+
+  return runAction("settings.manage", async (session) => {
+    await inShop(session, (tx) => tx`
+      INSERT INTO grip.tenant_settings (tenant_id, logo_url)
+      VALUES (${session.tenantId}, ${dataUrl})
+      ON CONFLICT (tenant_id) DO UPDATE SET logo_url = EXCLUDED.logo_url, updated_at = now()`);
+    refresh();
+    revalidatePath("/app/orders");
+  });
+}
+
+export async function removeLogo(_prev: ActionState, _form: FormData): Promise<ActionState> {
+  return runAction("settings.manage", async (session) => {
+    await inShop(session, (tx) => tx`
+      UPDATE grip.tenant_settings SET logo_url = NULL, updated_at = now() WHERE tenant_id = ${session.tenantId}`);
     refresh();
     revalidatePath("/app/orders");
   });
