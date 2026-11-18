@@ -109,7 +109,7 @@ export default async function PurchaseOrderPage({
       )}
 
       {/* Lines ----------------------------------------------------------------- */}
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Lines</h2>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wide text-steel">

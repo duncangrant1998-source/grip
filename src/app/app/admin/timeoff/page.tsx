@@ -31,7 +31,7 @@ export default async function AdminTimeOffPage() {
         <p className={`${card} px-5 py-4 text-sm text-steel`}>Nothing is waiting for an answer.</p>
       )}
 
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">History</h2>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wide text-steel">

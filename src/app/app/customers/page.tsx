@@ -48,11 +48,11 @@ export default async function CustomersPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Customers</h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <form className="flex gap-2">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <form className="flex w-full gap-2 sm:w-auto">
             <input
               name="q" defaultValue={q} placeholder="Name, email, phone, address, VIN, plate…"
-              className={`${input} w-80`} aria-label="Search customers"
+              className={`${input} min-w-0 flex-1 sm:w-80 sm:flex-none`} aria-label="Search customers"
             />
             <button className={btn}>Search</button>
           </form>
@@ -111,7 +111,7 @@ export default async function CustomersPage({
         </section>
       )}
 
-      <div className={`${card} overflow-hidden`}>
+      <div className={`${card} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-steel">
             <tr>

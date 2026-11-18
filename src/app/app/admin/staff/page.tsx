@@ -106,7 +106,7 @@ export default async function StaffPage({
       </div>
 
       {removed.length > 0 && (
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">
             Removed staff <span className="text-sm font-normal text-steel">({removed.length}) — kept on file</span>
           </h2>

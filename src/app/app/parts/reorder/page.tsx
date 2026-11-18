@@ -30,7 +30,7 @@ export default async function ReorderPage() {
       )}
 
       {groups.map((g) => (
-        <section key={g.supplier_id ?? "none"} className={`${card} overflow-hidden`}>
+        <section key={g.supplier_id ?? "none"} className={`${card} overflow-x-auto`}>
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
             <h2 className="font-semibold">{g.supplier_name ?? "No supplier assigned"}</h2>
             {g.supplier_id && canOrder ? (

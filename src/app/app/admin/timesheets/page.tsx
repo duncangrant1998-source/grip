@@ -66,7 +66,7 @@ export default async function TimesheetsPage({
 
         <TimesheetFilters from={from} to={to} who={who} mode="jobs" staff={staff} />
 
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Job time by person</h2>
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-steel">
@@ -106,7 +106,7 @@ export default async function TimesheetsPage({
           </table>
         </section>
 
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Entries</h2>
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-steel">
@@ -172,7 +172,7 @@ export default async function TimesheetsPage({
 
         <TimesheetFilters from={from} to={to} who={who} mode="flat" staff={staff} />
 
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Flat-rate hours by person</h2>
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-steel">
@@ -212,7 +212,7 @@ export default async function TimesheetsPage({
           </table>
         </section>
 
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Jobs</h2>
           <table className="w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-steel">
@@ -293,7 +293,7 @@ export default async function TimesheetsPage({
 
       <TimesheetFilters from={from} to={to} who={who} mode="hourly" staff={staff} />
 
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Hours by person</h2>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wide text-steel">
@@ -329,7 +329,7 @@ export default async function TimesheetsPage({
         </table>
       </section>
 
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <h2 className="border-b border-slate-100 px-5 py-3 font-semibold">Entries</h2>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wide text-steel">
