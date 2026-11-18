@@ -32,7 +32,8 @@ export type Action =
   | "reports.partsOnly"
   | "settings.manage"
   | "shortcuts.manage"
-  | "timeclock.own";
+  | "timeclock.own"
+  | "supportAccess.manage";
 
 const ALL: Action[] = [
   "appointments.view", "appointments.edit",
@@ -42,7 +43,7 @@ const ALL: Action[] = [
   "parts.viewCost", "inventory.view", "inventory.edit", "purchaseOrders.manage",
   "counterSales.create",
   "staff.manage", "reports.margin", "reports.partsOnly", "settings.manage", "shortcuts.manage",
-  "timeclock.own",
+  "timeclock.own", "supportAccess.manage",
 ];
 
 const MATRIX: Record<Role, ReadonlySet<Action>> = {

@@ -3,9 +3,26 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { inShop, requirePlatformAdmin } from "@/lib/auth";
+import { revokeSupportAccess } from "@/lib/platform-queries";
 import type { ActionState } from "@/lib/action";
 
 const statusEnum = z.enum(["open", "in_progress", "resolved"]);
+
+/** The operator closing a grant early — e.g. a diagnosis finished sooner than expected. */
+export async function operatorRevokeAccess(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { error: "Check the form and try again." };
+
+  try {
+    const session = await requirePlatformAdmin();
+    await revokeSupportAccess(session, parsed.data.id);
+    revalidatePath("/platform/support");
+    return { ok: true, nonce: Date.now() };
+  } catch (err) {
+    console.error("operatorRevokeAccess failed:", err);
+    return { error: "Something went wrong. Please try again." };
+  }
+}
 
 export async function setSupportRequestStatus(_prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = z.object({ id: z.string().uuid(), status: statusEnum }).safeParse(Object.fromEntries(form));
