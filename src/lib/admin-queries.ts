@@ -343,10 +343,14 @@ export function whoIsOnClock(session: Session) {
 
 // --- settings ----------------------------------------------------------------------
 
+export type InvoiceTemplate = "classic" | "modern" | "minimal";
+export type InvoiceLogoPosition = "left" | "center" | "right";
+
 export type Settings = {
   legal_name: string | null; address_line1: string | null; city: string | null;
   region: string | null; postal_code: string | null; country: string; phone: string | null;
   email: string | null; logo_url: string | null; invoice_footer: string | null;
+  invoice_template: InvoiceTemplate; invoice_logo_position: InvoiceLogoPosition;
   default_labour_rate: string; labour_billing_mode: "flat_rate" | "straight_time";
   timezone: string; open_hour: number; close_hour: number; default_tax_rate_id: string | null;
   hst_number: string | null;
@@ -357,6 +361,8 @@ export async function getSettings(session: Session) {
     SELECT t.name AS shop_name,
            s.legal_name, s.address_line1, s.city, s.region, s.postal_code,
            coalesce(s.country, 'CA') AS country, s.phone, s.email, s.logo_url, s.invoice_footer,
+           coalesce(s.invoice_template, 'classic') AS invoice_template,
+           coalesce(s.invoice_logo_position, 'left') AS invoice_logo_position,
            coalesce(s.default_labour_rate, 120) AS default_labour_rate,
            coalesce(s.labour_billing_mode, 'flat_rate') AS labour_billing_mode,
            coalesce(s.timezone, 'America/Vancouver') AS timezone,

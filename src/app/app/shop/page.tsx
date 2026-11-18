@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/auth";
 import { getSettings } from "@/lib/admin-queries";
 import { ActionForm } from "@/components/ActionForm";
+import { TemplatePicker } from "./TemplatePicker";
 import { btn, card, input, label } from "@/components/ui";
 import { saveDocuments, saveShopDetails } from "./actions";
 
@@ -86,6 +87,11 @@ export default async function ShopDetailsPage() {
             <label className={label} htmlFor="footer">Footer</label>
             <textarea id="footer" name="invoice_footer" rows={3} defaultValue={s.invoice_footer ?? ""}
               placeholder="Warranty terms, payment details, thank-you note…" className={`${input} w-full`} />
+          </div>
+          <div>
+            <label className={label}>Layout</label>
+            <p className="mb-2 text-xs text-steel">Which style quotes and invoices print in — pick a layout, then nudge the logo within it.</p>
+            <TemplatePicker defaultTemplate={s.invoice_template} defaultLogoPosition={s.invoice_logo_position} />
           </div>
           <button className={btn}>Save</button>
         </ActionForm>

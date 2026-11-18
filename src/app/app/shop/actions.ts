@@ -57,17 +57,25 @@ export async function saveDocuments(_prev: ActionState, form: FormData): Promise
     logo_url: z.string().trim().max(500).optional().transform((v) => v || null)
       .refine((v) => v === null || /^https:\/\/\S+$/.test(v), "The logo must be an https:// link."),
     invoice_footer: optText(500),
+    invoice_template: z.enum(["classic", "modern", "minimal"]).default("classic"),
+    invoice_logo_position: z.enum(["left", "center", "right"]).default("left"),
   }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return bad(parsed);
   const s = parsed.data;
 
   return runAction("settings.manage", async (session) => {
     await inShop(session, (tx) => tx`
-      INSERT INTO grip.tenant_settings (tenant_id, logo_url, invoice_footer)
-      VALUES (${session.tenantId}, ${s.logo_url}, ${s.invoice_footer})
+      INSERT INTO grip.tenant_settings
+        (tenant_id, logo_url, invoice_footer, invoice_template, invoice_logo_position)
+      VALUES (${session.tenantId}, ${s.logo_url}, ${s.invoice_footer},
+              ${s.invoice_template}::grip.invoice_template,
+              ${s.invoice_logo_position}::grip.invoice_logo_position)
       ON CONFLICT (tenant_id) DO UPDATE SET
-        logo_url = EXCLUDED.logo_url, invoice_footer = EXCLUDED.invoice_footer, updated_at = now()`);
+        logo_url = EXCLUDED.logo_url, invoice_footer = EXCLUDED.invoice_footer,
+        invoice_template = EXCLUDED.invoice_template,
+        invoice_logo_position = EXCLUDED.invoice_logo_position, updated_at = now()`);
     refresh();
+    revalidatePath("/app/orders");
   });
 }
 
