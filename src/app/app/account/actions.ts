@@ -6,7 +6,8 @@ import { inShop, requireSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { clearSessionCookie } from "@/lib/session";
-import type { ActionState } from "@/lib/action";
+import { runAction, type ActionState } from "@/lib/action";
+import { grantSupportAccess, revokeSupportAccess } from "@/lib/platform-queries";
 
 export async function changePassword(_prev: ActionState, form: FormData): Promise<ActionState> {
   const parsed = z.object({
@@ -47,4 +48,32 @@ export async function submitSupportRequest(_prev: ActionState, form: FormData): 
     SELECT grip.create_support_request(${parsed.data.subject}, ${parsed.data.message})`);
   revalidatePath("/app/account");
   return { ok: true, nonce: Date.now() };
+}
+
+const supportAccessHours = z.coerce.number().int().min(1).max(168);
+
+/** Opens this shop's account to GRIP support for a limited, chosen window. */
+export async function grantAccess(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    hours: supportAccessHours,
+    support_request_id: z.preprocess((v) => (v === "" ? undefined : v), z.string().uuid().optional()),
+    note: z.string().trim().max(300).optional().transform((v) => v || null),
+  }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form." };
+  const a = parsed.data;
+
+  return runAction("supportAccess.manage", async (session) => {
+    await grantSupportAccess(session, a.hours, a.support_request_id ?? null, a.note);
+    revalidatePath("/app/account");
+  });
+}
+
+export async function revokeAccess(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const parsed = z.object({ id: z.string().uuid() }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return { error: "Check the form." };
+
+  return runAction("supportAccess.manage", async (session) => {
+    await revokeSupportAccess(session, parsed.data.id);
+    revalidatePath("/app/account");
+  });
 }

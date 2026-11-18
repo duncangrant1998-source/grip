@@ -208,11 +208,43 @@ describe("the platform super-admin", () => {
       fn,
     );
 
-  test("sees across tenants", async () => {
+  test("does not see another shop's data without a grant", async () => {
     const rows = await asOperator((tx) => tx<{ id: string }[]>`
       SELECT id FROM grip.customers
       WHERE id IN (${redline.customerId}, ${northside.customerId})`);
-    expect(rows).toHaveLength(2);
+    // Still sees redline's own row (the operator's own tenant), not northside's.
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe(redline.customerId);
+  });
+
+  test("sees it once northside grants access, and loses it again once revoked", async () => {
+    const [{ id: grantId }] = await owner()`
+      INSERT INTO grip.support_access_grants (tenant_id, expires_at)
+      VALUES (${northside.tenantId}, now() + interval '1 hour')
+      RETURNING id`;
+
+    const withGrant = await asOperator((tx) => tx<{ id: string }[]>`
+      SELECT id FROM grip.customers
+      WHERE id IN (${redline.customerId}, ${northside.customerId})`);
+    expect(withGrant).toHaveLength(2);
+
+    await owner()`UPDATE grip.support_access_grants SET revoked_at = now() WHERE id = ${grantId}`;
+
+    const afterRevoke = await asOperator((tx) => tx<{ id: string }[]>`
+      SELECT id FROM grip.customers
+      WHERE id IN (${redline.customerId}, ${northside.customerId})`);
+    expect(afterRevoke).toHaveLength(1);
+    expect(afterRevoke[0].id).toBe(redline.customerId);
+  });
+
+  test("an expired grant is as good as none", async () => {
+    await owner()`
+      INSERT INTO grip.support_access_grants (tenant_id, expires_at)
+      VALUES (${northside.tenantId}, now() - interval '1 minute')`;
+
+    const rows = await asOperator((tx) => tx<{ id: string }[]>`
+      SELECT id FROM grip.customers WHERE id = ${northside.customerId}`);
+    expect(rows).toHaveLength(0);
   });
 
   test("a shop admin is not silently promoted by asking nicely", async () => {

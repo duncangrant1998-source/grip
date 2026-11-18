@@ -87,9 +87,22 @@ not).
 - A forgotten `WHERE tenant_id = ...` is harmless.
 - `WITH CHECK` means a tenant cannot *write* a row into another tenant either —
   the attack that pure read-side filtering misses.
-- Platform super-admins are a deliberate, auditable exception: policies are
-  `USING (tenant_id = current_tenant_id() OR current_is_platform_admin())`, and
-  that flag is only ever set for a user whose `platform_admins` row exists.
+- The platform operator is **not** a blanket exception (0023 removed that — see
+  below): `is_platform_admin` alone no longer opens any shop's own data. Every
+  shop-owned table uses `shop_data_visible(tenant_id)`, which is the tenant
+  match plus, for the operator, an active row in `support_access_grants` for
+  that tenant — a time-boxed grant a shop creates for itself (never something
+  the operator can create on a shop's behalf) when it wants help diagnosing
+  something. `tenant_visible()` (tenant match OR `is_platform_admin`,
+  unconditionally) still exists and still applies to the small set of
+  genuinely operator-owned tables that were never a shop's data in the first
+  place: the `tenants` registry row itself, and the 0022 console tables
+  (`support_requests`, `payments`, `security_events`, `login_attempts`,
+  `platform_notifications`). The operator's bulk view across every shop (user
+  counts, order volume, last-activity) comes from `platform_shop_stats()`, a
+  `SECURITY DEFINER` aggregate gated on `current_is_platform_admin()` — it
+  hands back numbers, never shop rows, so the console doesn't need broad
+  table access to show them.
 
 ### Migrations and seeds
 Run as the **owner** role (which does bypass RLS). The app never uses that role.
@@ -333,7 +346,8 @@ Five roles. A user has exactly one, plus the orthogonal platform-admin flag.
 | Margin reporting | — | — | parts only | ✅ | ✅ |
 | Tenant settings | — | — | — | ✅ | ✅ |
 | Manage service shortcuts | — | — | ✅ | ✅ | ✅ |
-| Cross-tenant access | — | — | — | — | ✅ |
+| Grant/revoke GRIP support access to this shop | — | — | — | ✅ | revoke only |
+| Cross-tenant access to shop data | — | — | — | — | only while a grant is open |
 
 Notes:
 - **Service and parts both write to the live work order.** That is the point of
@@ -459,3 +473,10 @@ rate builder back — the storage still supports it.
 
 Still open: whether invoices need a customer-facing PDF in MVP, or printing
 from the browser is enough.
+
+Settled since: the platform operator's own account does not see a shop's
+customers, work orders, staff, or any other shop-owned table by default —
+only the registry row (name, plan, status, location) and the aggregate usage
+`platform_shop_stats()` hands back. A shop opens its own data to GRIP support,
+for a chosen window, from **Account → GRIP support access**; either side can
+close it early, and it also closes itself when the window ends (§3, §5).

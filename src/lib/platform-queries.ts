@@ -8,19 +8,63 @@ import type { Session } from "./session";
 
 export type ShopRow = {
   id: string; name: string; slug: string; plan: string; status: string;
-  users: string; orders: string;
+  city: string | null; province: string | null; postal_code: string | null;
+  trial_ends_at: Date | null;
+  users: string; orders: string; orders_last_30d: string;
+  last_activity_at: Date | null;
 };
 
+// Counts and timestamps come from grip.platform_shop_stats(), a
+// SECURITY DEFINER aggregate (0023) — not from reading grip.users /
+// grip.work_orders directly, which a platform admin can no longer do for a
+// shop that hasn't granted access. The join below never touches those
+// tables' actual rows, only the numbers the function hands back.
 export function listShops(session: Session) {
   return inShop(
     session,
     (tx) => tx<ShopRow[]>`
       SELECT t.id, t.name, t.slug, t.plan, t.status,
-             (SELECT count(*) FROM grip.users u WHERE u.tenant_id = t.id) AS users,
-             (SELECT count(*) FROM grip.work_orders w WHERE w.tenant_id = t.id) AS orders
+             t.city, t.province, t.postal_code, t.trial_ends_at,
+             coalesce(s.users, 0)::text AS users,
+             coalesce(s.orders, 0)::text AS orders,
+             coalesce(s.orders_last_30d, 0)::text AS orders_last_30d,
+             s.last_activity_at
       FROM grip.tenants t
+      LEFT JOIN grip.platform_shop_stats() s ON s.tenant_id = t.id
       ORDER BY t.created_at`,
   );
+}
+
+export type SupportAccessGrantRow = {
+  id: string; tenant_id: string; shop_name: string;
+  granted_by_name: string | null; note: string | null;
+  expires_at: Date; revoked_at: Date | null; created_at: Date;
+};
+
+/** Every grant, across shops if called by the operator — metadata only (no shop content). */
+export function listSupportAccessGrants(session: Session) {
+  return inShop(
+    session,
+    (tx) => tx<SupportAccessGrantRow[]>`
+      SELECT g.id, g.tenant_id, t.name AS shop_name, u.full_name AS granted_by_name,
+             g.note, g.expires_at, g.revoked_at, g.created_at
+      FROM grip.support_access_grants g
+      JOIN grip.tenants t ON t.id = g.tenant_id
+      LEFT JOIN grip.users u ON u.id = g.granted_by_user_id
+      ORDER BY (g.revoked_at IS NULL AND g.expires_at > now()) DESC, g.created_at DESC`,
+  );
+}
+
+export function grantSupportAccess(session: Session, hours: number, supportRequestId: string | null, note: string | null) {
+  return inShop(
+    session,
+    (tx) => tx<{ id: string; expires_at: Date }[]>`
+      SELECT * FROM grip.grant_support_access(${hours}, ${supportRequestId}, ${note})`,
+  );
+}
+
+export function revokeSupportAccess(session: Session, id: string) {
+  return inShop(session, (tx) => tx`SELECT grip.revoke_support_access(${id})`);
 }
 
 export type TenantOption = { id: string; name: string; slug: string };

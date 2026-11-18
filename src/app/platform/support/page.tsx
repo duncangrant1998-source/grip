@@ -1,9 +1,10 @@
 import { requirePlatformAdmin } from "@/lib/auth";
-import { listSupportRequests } from "@/lib/platform-queries";
+import { listSupportRequests, listSupportAccessGrants } from "@/lib/platform-queries";
 import { card, btnGhost } from "@/components/ui";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { dateTime } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
-import { setSupportRequestStatus } from "./actions";
+import { setSupportRequestStatus, operatorRevokeAccess } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,42 @@ export default async function SupportPage() {
   const open = requests.filter((r) => r.status !== "resolved");
   const resolved = requests.filter((r) => r.status === "resolved");
 
+  const grants = await listSupportAccessGrants(session);
+  const activeGrants = grants.filter((g) => !g.revoked_at && new Date(g.expires_at) > new Date());
+
   return (
     <div className="space-y-6">
+      <section className="space-y-3">
+        <h2 className="font-semibold">Shops with access open right now</h2>
+        {activeGrants.length === 0 ? (
+          <p className={`${card} px-5 py-4 text-sm text-steel`}>
+            No shop has opened its data to you right now — you only see each shop's account,
+            activity and billing, not its customers, work orders or staff, unless it grants access.
+          </p>
+        ) : (
+          activeGrants.map((g) => (
+            <div key={g.id} className={`${card} flex items-center justify-between p-4 text-sm`}>
+              <div>
+                <span className="font-semibold">{g.shop_name}</span>
+                <span className="ml-2 text-steel">
+                  open until {dateTime(g.expires_at)}{g.note ? ` — ${g.note}` : ""}
+                </span>
+              </div>
+              <ActionForm action={operatorRevokeAccess}>
+                <input type="hidden" name="id" value={g.id} />
+                <ConfirmButton
+                  label="Close access"
+                  title="Close this shop's access grant?"
+                  message="You'll lose visibility into this shop's customers, work orders and staff until they grant access again."
+                  confirmLabel="Close access"
+                  className={btnGhost}
+                />
+              </ActionForm>
+            </div>
+          ))
+        )}
+      </section>
+
       <section className="space-y-3">
         <h2 className="font-semibold">Open</h2>
         {open.length === 0 && (

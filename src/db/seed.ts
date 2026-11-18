@@ -104,8 +104,9 @@ async function seedShop(sql: Sql, passwordHash: string, spec: ShopSpec) {
   console.log(`Seeding ${spec.name} ...`);
 
   const [tenant] = await sql<{ id: string }[]>`
-    INSERT INTO grip.tenants (name, slug, plan, status, trial_ends_at)
-    VALUES (${spec.name}, ${spec.slug}, 'shop', 'active', now() + interval '14 days')
+    INSERT INTO grip.tenants (name, slug, plan, status, trial_ends_at, city, province)
+    VALUES (${spec.name}, ${spec.slug}, 'shop', 'active', now() + interval '14 days',
+            ${spec.city}, 'ON')
     RETURNING id`;
   const tenantId = tenant.id;
 
