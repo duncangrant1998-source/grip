@@ -64,7 +64,7 @@ export default async function ShortcutPage({
 
       <div className="grid gap-6 xl:grid-cols-2">
         {/* Labour -------------------------------------------------------- */}
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <div className="border-b border-slate-100 px-5 py-3">
             <h2 className="font-semibold">Labour</h2>
             <p className="text-xs text-steel">
@@ -138,7 +138,7 @@ export default async function ShortcutPage({
         </section>
 
         {/* Parts --------------------------------------------------------- */}
-        <section className={`${card} overflow-hidden`}>
+        <section className={`${card} overflow-x-auto`}>
           <div className="border-b border-slate-100 px-5 py-3">
             <h2 className="font-semibold">Parts</h2>
             <p className="text-xs text-steel">Priced and reserved from live inventory when the shortcut is used.</p>

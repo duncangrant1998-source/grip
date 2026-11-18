@@ -61,12 +61,13 @@ export default async function OrdersPage({
             {isTech ? "Jobs assigned to you. " : ""}{SCOPES[scope].blurb}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <form className="flex gap-2">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <form className="flex w-full gap-2 sm:w-auto">
             <input type="hidden" name="scope" value={scope} />
             <input
               name="q" defaultValue={q} aria-label="Search work orders"
-              placeholder="Number, customer, VIN, plate…" className={`${input} w-72`}
+              placeholder="Number, customer, VIN, plate…"
+              className={`${input} min-w-0 flex-1 sm:w-72 sm:flex-none`}
             />
             <button className={btn}>Search</button>
           </form>
@@ -76,7 +77,7 @@ export default async function OrdersPage({
         </div>
       </div>
 
-      <div className={`${card} overflow-hidden`}>
+      <div className={`${card} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-steel">
             <tr>

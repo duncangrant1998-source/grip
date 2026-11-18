@@ -128,7 +128,7 @@ export default async function SalePage({
         </div>
       )}
 
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wide text-steel">
             <tr>

@@ -186,12 +186,13 @@ export default async function InventoryPage({
             </Link>
           ))}
         </div>
-        <form className="flex gap-2">
+        <form className="flex w-full gap-2 sm:w-auto">
           <input type="hidden" name="view" value={view} />
           {cat && <input type="hidden" name="cat" value={cat} />}
           {sub && <input type="hidden" name="sub" value={sub} />}
           <input name="q" defaultValue={q} aria-label="Search parts"
-            placeholder="SKU, description, category, bin, or a VIN…" className={`${input} w-72`} />
+            placeholder="SKU, description, category, bin, or a VIN…"
+            className={`${input} min-w-0 flex-1 sm:w-72 sm:flex-none`} />
           <button className={btn}>Search</button>
           {(q || cat) && <Link href="/app/parts" className={btnGhost}>Clear</Link>}
         </form>

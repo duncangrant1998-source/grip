@@ -371,7 +371,7 @@ async function HoursTab({
         </div>
       </div>
 
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-steel">
             <tr>

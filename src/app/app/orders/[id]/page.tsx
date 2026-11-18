@@ -172,7 +172,7 @@ export default async function WorkOrderPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26rem] xl:items-start">
         <div className="min-w-0 space-y-6">
       {/* Labour ---------------------------------------------------------------- */}
-      <section className={`${card} overflow-hidden`}>
+      <section className={`${card} overflow-x-auto`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
           <h2 className="font-semibold">Labour</h2>
           <span className="text-xs text-steel">
@@ -232,7 +232,7 @@ export default async function WorkOrderPage({
       </section>
 
       {/* Parts ---------------------------------------------------------------- */}
-      <section id="parts" className={`${card} scroll-mt-4 overflow-hidden`}>
+      <section id="parts" className={`${card} scroll-mt-4 overflow-x-auto`}>
         <div className="border-b border-slate-100 px-5 py-3">
           <h2 className="font-semibold">Parts</h2>
         </div>

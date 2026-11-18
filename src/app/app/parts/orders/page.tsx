@@ -47,7 +47,7 @@ export default async function PurchaseOrdersPage({
         ))}
       </div>
 
-      <div className={`${card} overflow-hidden`}>
+      <div className={`${card} overflow-x-auto`}>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-steel">
             <tr>
