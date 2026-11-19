@@ -18,3 +18,48 @@ summary.no-marker {
 summary.no-marker::-webkit-details-marker {
   display: none;
 }
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Marketing-site decoration: a faint dot grid used behind hero/CTA sections,
+   echoing the dashboard-style backgrounds in the product itself. Kept as a
+   background-image so it never affects layout or interaction. */
+.bg-dot-grid {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Staggered entrance for a group of siblings: give each child
+   `animation-delay` via the nth-child rule below, or set style={{ animationDelay }}
+   inline for dynamic lists. */
+.fade-up-group > * {
+  animation: fade-up 0.6s ease-out both;
+}
+.fade-up-group > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.fade-up-group > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.fade-up-group > *:nth-child(4) {
+  animation-delay: 0.24s;
+}

@@ -10,12 +10,16 @@ const navLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-blueline">
+    <footer className="border-t border-blueline bg-slate-50">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10 text-sm text-steel sm:flex-row sm:items-center sm:justify-between">
-        <Logo className="h-5" />
+        <Logo className="h-7" />
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-navy">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="transition hover:text-shop"
+            >
               {link.label}
             </Link>
           ))}
