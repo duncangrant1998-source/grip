@@ -485,3 +485,16 @@ rate builder back — the storage still supports it.
 
 Still open: whether invoices need a customer-facing PDF in MVP, or printing
 from the browser is enough.
+
+**Intershop messaging** (added post-roadmap): direct messages between any two
+coworkers at the same shop — not gated by the role/permission matrix in §5,
+since talking to a coworker isn't a department action. One thread per pair
+per shop (`grip.message_threads`, least-to-greatest user ids so the pair is
+canonical), delivery by polling (`LiveRefresh`) rather than a push
+subscription. Unlike the role-based narrowing elsewhere in the app (handled
+in the query layer, e.g. a technician's own-job view), which coworkers a
+thread is visible to is enforced in RLS itself (0026) — a hard privacy
+boundary, not a convenience filter, so a bug in a query can't leak someone
+else's DMs to a third coworker at the same shop. Client-facing email/SMS
+(as opposed to intershop messaging) is a separate, later add-on — see the
+shop_addons entitlement note once that's built.

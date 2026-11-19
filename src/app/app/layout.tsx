@@ -1,6 +1,7 @@
 import { requireSession, inShop } from "@/lib/auth";
 import { can, departmentsFor, ROLE_LABELS, type Department } from "@/lib/permissions";
 import { unreadNotificationCount } from "@/lib/platform-queries";
+import { unreadMessageCount } from "@/lib/messaging-queries";
 import { AppNav, type AppNavLink } from "@/components/AppNav";
 import { Logo } from "@/components/Logo";
 import { logout } from "../login/actions";
@@ -22,9 +23,17 @@ export default async function PortalLayout({ children }: { children: React.React
   );
 
   const departments = departmentsFor(session.role, session.extraRoles);
-  const unreadCount = session.isPlatformAdmin ? await unreadNotificationCount(session) : 0;
+  const [unreadCount, unreadMessages] = await Promise.all([
+    session.isPlatformAdmin ? unreadNotificationCount(session) : Promise.resolve(0),
+    unreadMessageCount(session),
+  ]);
 
-  const links: AppNavLink[] = [{ href: "/app", label: "Dashboard" }];
+  // Open to every signed-in user regardless of role — messaging a coworker
+  // isn't a department permission, it's just being staff at this shop.
+  const links: AppNavLink[] = [
+    { href: "/app", label: "Dashboard" },
+    { href: "/app/messages", label: "Messages", badge: unreadMessages },
+  ];
   if (can(session.role, "workorders.view", session.extraRoles) && !departments.includes("service")) {
     links.push({ href: "/app/orders", label: "Work orders" });
   }
