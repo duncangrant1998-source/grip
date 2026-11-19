@@ -8,6 +8,7 @@ const TABS = [
   { href: "/app/shop/bays", label: "Bays" },
   { href: "/app/shop/hours", label: "Hours" },
   { href: "/app/shop/pricing", label: "Labour and tax" },
+  { href: "/app/shop/addons", label: "Add-ons" },
 ];
 
 export function ShopNav() {

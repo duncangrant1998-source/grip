@@ -22,6 +22,7 @@ import {
 import { describeAudit } from "./audit";
 import { DetailsEditor, NotesBox } from "./AutoSave";
 import { CustomerPanel } from "./CustomerPanel";
+import { ClientMessagingPanel } from "./ClientMessagingPanel";
 import { AddLabourForm, LabourRow } from "./LabourEditor";
 
 export const dynamic = "force-dynamic";
@@ -353,6 +354,11 @@ export default async function WorkOrderPage({
         </div>
 
         <aside className="space-y-6 xl:sticky xl:top-4">
+      <ClientMessagingPanel
+        session={session} workOrderId={order.id} orderStatus={order.status}
+        customerEmail={order.customer_email} customerPhone={order.customer_phone}
+      />
+
       {/* Options: tax and labour mode ---------------------------------------- */}
       {mayOptions && (
         <div className={`${card} space-y-4 p-4`}>

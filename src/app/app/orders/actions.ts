@@ -6,6 +6,7 @@ import { inShop } from "@/lib/auth";
 import { runAction, redirect, type ActionState } from "@/lib/action";
 import { can, canTransition, type WorkOrderStatus } from "@/lib/permissions";
 import { canSeeOrder, ownEmployeeId } from "@/lib/queries";
+import { sendClientMessage as sendViaProvider } from "@/lib/client-notify";
 
 const uuid = z.string().uuid();
 const num = (max: number) =>
@@ -386,6 +387,44 @@ export async function setPartLineTaxable(_prev: ActionState, form: FormData): Pr
       throw Object.assign(new Error("Work order not found."), { code: "P0001" });
     }
     await inShop(session, (tx) => tx`SELECT grip.set_part_line_taxable(${p.line_id}, ${p.taxable})`);
+    refresh(p.work_order_id);
+  });
+}
+
+/**
+ * Emails or texts the customer on this work order, through the client-
+ * messaging add-on. grip.send_client_message is where the hard rules live
+ * (add-on must be active for this shop, order must be open, the customer
+ * needs that contact method on file) — this just inserts the 'queued' row
+ * via that function, then makes one best-effort attempt through whichever
+ * provider is configured (src/lib/client-notify.ts) and records the
+ * outcome. A provider that isn't set up yet is not an error: the row just
+ * ends up 'failed' with a plain reason, visible in the message history.
+ */
+export async function sendClientMessage(_prev: ActionState, form: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    work_order_id: uuid,
+    channel: z.enum(["email", "sms"]),
+    body: z.string().trim().min(1, "Write something before sending.").max(1600),
+  }).safeParse(Object.fromEntries(form));
+  if (!parsed.success) return bad(parsed);
+  const p = parsed.data;
+
+  return runAction("clientMessaging.send", async (session) => {
+    if (!(await canSeeOrder(session, p.work_order_id))) {
+      throw Object.assign(new Error("Work order not found."), { code: "P0001" });
+    }
+
+    const [{ send_client_message: messageId }] = await inShop(session, (tx) => tx<{ send_client_message: string }[]>`
+      SELECT grip.send_client_message(${p.work_order_id}, ${p.channel}::grip.message_channel, ${p.body})`);
+    const [row] = await inShop(session, (tx) => tx<{ to_address: string }[]>`
+      SELECT to_address FROM grip.client_messages WHERE id = ${messageId}`);
+
+    const result = await sendViaProvider({ channel: p.channel, to: row.to_address, body: p.body });
+    await inShop(session, (tx) => tx`
+      SELECT grip.set_client_message_outcome(${messageId},
+        ${result.sent ? "sent" : "failed"}::grip.client_message_status, ${result.reason ?? null})`);
+
     refresh(p.work_order_id);
   });
 }

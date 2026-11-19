@@ -32,7 +32,8 @@ export type Action =
   | "reports.partsOnly"
   | "settings.manage"
   | "shortcuts.manage"
-  | "timeclock.own";
+  | "timeclock.own"
+  | "clientMessaging.send";
 
 const ALL: Action[] = [
   "appointments.view", "appointments.edit",
@@ -42,7 +43,7 @@ const ALL: Action[] = [
   "parts.viewCost", "inventory.view", "inventory.edit", "purchaseOrders.manage",
   "counterSales.create",
   "staff.manage", "reports.margin", "reports.partsOnly", "settings.manage", "shortcuts.manage",
-  "timeclock.own",
+  "timeclock.own", "clientMessaging.send",
 ];
 
 const MATRIX: Record<Role, ReadonlySet<Action>> = {
@@ -54,7 +55,7 @@ const MATRIX: Record<Role, ReadonlySet<Action>> = {
     "workorders.create", "workorders.view", "workorders.addLabour", "workorders.addPart",
     "workorders.changeStatus", "workorders.invoice",
     "inventory.view", "shortcuts.manage",
-    "timeclock.own",
+    "timeclock.own", "clientMessaging.send",
   ]),
 
   // Technicians get a deliberately narrow view: their own jobs and hours.
