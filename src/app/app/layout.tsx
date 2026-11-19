@@ -30,19 +30,20 @@ export default async function PortalLayout({ children }: { children: React.React
 
   // Open to every signed-in user regardless of role — messaging a coworker
   // isn't a department permission, it's just being staff at this shop.
-  const links: AppNavLink[] = [
-    { href: "/app", label: "Dashboard" },
-    { href: "/app/messages", label: "Messages", badge: unreadMessages },
-  ];
-  if (can(session.role, "workorders.view", session.extraRoles) && !departments.includes("service")) {
+  const links: AppNavLink[] = [{ href: "/app", label: "Dashboard" }];
+  if (departments.includes("service")) {
+    links.push({ href: NAV.service.href, label: NAV.service.label });
+  } else if (can(session.role, "workorders.view", session.extraRoles)) {
     links.push({ href: "/app/orders", label: "Work orders" });
   }
+  if (departments.includes("parts")) links.push({ href: NAV.parts.href, label: NAV.parts.label });
   if (can(session.role, "customers.view", session.extraRoles)) links.push({ href: "/app/customers", label: "Customers" });
-  for (const d of departments) links.push({ href: NAV[d].href, label: NAV[d].label });
-  if (can(session.role, "settings.manage", session.extraRoles)) links.push({ href: "/app/shop", label: "My Shop" });
+  links.push({ href: "/app/messages", label: "Messages", badge: unreadMessages });
+  if (departments.includes("admin")) links.push({ href: NAV.admin.href, label: NAV.admin.label });
   if (can(session.role, "reports.margin", session.extraRoles) || can(session.role, "reports.partsOnly", session.extraRoles)) {
     links.push({ href: "/app/reports", label: can(session.role, "reports.margin", session.extraRoles) ? "Reports" : "Parts sales" });
   }
+  if (can(session.role, "settings.manage", session.extraRoles)) links.push({ href: "/app/shop", label: "My Shop" });
   if (can(session.role, "timeclock.own", session.extraRoles)) links.push({ href: "/app/time", label: "Time clock" });
   if (session.isPlatformAdmin) links.push({ href: "/platform", label: "Platform", badge: unreadCount });
 
