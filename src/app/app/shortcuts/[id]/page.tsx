@@ -5,6 +5,7 @@ import { can } from "@/lib/permissions";
 import { getShortcut, searchParts } from "@/lib/queries";
 import { MODE_LABELS, hours, money } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
+import { SectionShell } from "@/components/SectionShell";
 import { ServiceNav } from "@/components/ServiceNav";
 import { btn, btnDanger, btnGhost, card, input, label } from "@/components/ui";
 import {
@@ -33,8 +34,8 @@ export default async function ShortcutPage({
   const hits = partq.trim() ? await searchParts(session, partq.trim()) : [];
 
   return (
+    <SectionShell nav={<ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />}>
     <div className="space-y-5">
-      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />
       <div>
         <Link href="/app/shortcuts" className="text-sm text-steel hover:text-ink">← Shortcuts</Link>
         <h1 className="mt-1 text-2xl font-bold">
@@ -218,5 +219,6 @@ export default async function ShortcutPage({
         <p className="mt-1 text-xs text-steel">Work orders that already used it are not changed.</p>
       </section>
     </div>
+    </SectionShell>
   );
 }

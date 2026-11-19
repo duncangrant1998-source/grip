@@ -6,6 +6,7 @@ import { listOrders } from "@/lib/queries";
 import { dateTime, money } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
 import { ClickRow } from "@/components/ClickRow";
+import { SectionShell } from "@/components/SectionShell";
 import { ServiceNav } from "@/components/ServiceNav";
 import { StatusBadge } from "@/components/StatusBadge";
 import { btn, btnGhost, card, input } from "@/components/ui";
@@ -48,11 +49,15 @@ export default async function OrdersPage({
   const showTabs = can(session.role, "appointments.view", session.extraRoles) || session.role !== "parts_advisor";
 
   return (
+    <SectionShell
+      nav={
+        showTabs ? (
+          <ServiceNav role={session.role} extraRoles={session.extraRoles} active={scope === "all" ? "open" : scope} />
+        ) : undefined
+      }
+    >
     <div className="space-y-5">
       <LiveRefresh everyMs={10000} />
-      {showTabs && (
-        <ServiceNav role={session.role} extraRoles={session.extraRoles} active={scope === "all" ? "open" : scope} />
-      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -127,5 +132,6 @@ export default async function OrdersPage({
         </table>
       </div>
     </div>
+    </SectionShell>
   );
 }

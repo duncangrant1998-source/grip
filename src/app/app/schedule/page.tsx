@@ -8,6 +8,7 @@ import {
   formatMinutes, isDateString, startOfMonth, startOfWeek, toTimeInput, weekDays,
 } from "@/lib/dates";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { SectionShell } from "@/components/SectionShell";
 import { ServiceNav } from "@/components/ServiceNav";
 import { btn, btnGhost } from "@/components/ui";
 import { MonthGrid } from "./MonthGrid";
@@ -119,9 +120,9 @@ export default async function SchedulePage({
       : formatLong(date);
 
   return (
+    <SectionShell nav={<ServiceNav role={session.role} extraRoles={session.extraRoles} active="schedule" />}>
     <div className="space-y-5">
       <LiveRefresh everyMs={20000} />
-      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="schedule" />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -189,5 +190,6 @@ export default async function SchedulePage({
         )}
       </div>
     </div>
+    </SectionShell>
   );
 }

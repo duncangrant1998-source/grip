@@ -13,6 +13,8 @@ import {
 } from "@/lib/dates";
 import { ActionForm } from "@/components/ActionForm";
 import { LiveRefresh } from "@/components/LiveRefresh";
+import { SectionShell } from "@/components/SectionShell";
+import { SideNavList } from "@/components/SideNavList";
 import { btn, btnDanger, card, input, label } from "@/components/ui";
 import { clockIn, clockOut, startJob, stopJob } from "./actions";
 import { MyCalendar } from "./MyCalendar";
@@ -57,36 +59,30 @@ export default async function TimeClockPage({
   const toAnswer = await listTimeOffToAnswer(session, isAdmin);
 
   return (
+    <SectionShell
+      nav={
+        <SideNavList
+          items={TABS.map((t) => ({
+            href: t.key === "clock" ? "/app/time" : `/app/time?tab=${t.key}`,
+            label: t.label,
+            active: tab === t.key,
+            badge: t.key === "timeoff" ? toAnswer.length : undefined,
+          }))}
+        />
+      }
+    >
     <div className="mx-auto max-w-6xl space-y-6">
       <LiveRefresh everyMs={30000} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-bold">Time clock</h1>
       </div>
 
-      <nav className="flex flex-wrap gap-1 border-b border-slate-200 text-sm">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={t.key === "clock" ? "/app/time" : `/app/time?tab=${t.key}`}
-            className={`-mb-px border-b-2 px-4 py-2 font-medium ${
-              tab === t.key ? "border-shop text-ink" : "border-transparent text-steel hover:text-ink"
-            }`}
-          >
-            {t.label}
-            {t.key === "timeoff" && toAnswer.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                {toAnswer.length}
-              </span>
-            )}
-          </Link>
-        ))}
-      </nav>
-
       {tab === "clock" && <ClockTab me={me} ctx={ctx} session={session} />}
       {tab === "schedule" && <ScheduleTab me={me} ctx={ctx} session={session} month={sp.month} />}
       {tab === "hours" && <HoursTab me={me} ctx={ctx} session={session} from={sp.from} to={sp.to} />}
       {tab === "timeoff" && <TimeOffTab me={me} ctx={ctx} session={session} toAnswer={toAnswer} />}
     </div>
+    </SectionShell>
   );
 }
 

@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/auth";
 import { can } from "@/lib/permissions";
 import { redirect } from "next/navigation";
+import { SectionShell } from "@/components/SectionShell";
 import { ShopNav } from "./ShopNav";
 
 /**
@@ -12,10 +13,5 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
   const session = await requireSession();
   if (!can(session.role, "settings.manage", session.extraRoles)) redirect("/app?denied=your shop's settings");
 
-  return (
-    <div>
-      <ShopNav />
-      {children}
-    </div>
-  );
+  return <SectionShell nav={<ShopNav />}>{children}</SectionShell>;
 }

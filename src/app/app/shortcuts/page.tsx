@@ -6,6 +6,7 @@ import { listShortcuts } from "@/lib/queries";
 import { hours } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
 import { ClickRow } from "@/components/ClickRow";
+import { SectionShell } from "@/components/SectionShell";
 import { ServiceNav } from "@/components/ServiceNav";
 import { btn, card, input, label } from "@/components/ui";
 import { createShortcut } from "./actions";
@@ -18,8 +19,8 @@ export default async function ShortcutsPage() {
   const shortcuts = await listShortcuts(session);
 
   return (
+    <SectionShell nav={<ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />}>
     <div className="space-y-5">
-      <ServiceNav role={session.role} extraRoles={session.extraRoles} active="shortcuts" />
       <div>
         <h1 className="text-2xl font-bold">Service shortcuts</h1>
         <p className="max-w-3xl text-sm text-steel">
@@ -83,5 +84,6 @@ export default async function ShortcutsPage() {
         </section>
       </div>
     </div>
+    </SectionShell>
   );
 }
